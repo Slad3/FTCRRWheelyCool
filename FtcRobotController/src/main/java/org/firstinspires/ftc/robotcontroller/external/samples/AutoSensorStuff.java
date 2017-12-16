@@ -64,6 +64,7 @@ public class AutoSensorStuff extends OpMode {
     boolean red, blue, green;
     boolean Adetects;
     boolean Cdetects;
+    double increment = .1;
 
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
@@ -387,36 +388,19 @@ public class AutoSensorStuff extends OpMode {
 
     //Make the sensors actually sensor
 
-    public void correctXAxis(boolean leftSensorDetected, boolean rightSensorDetected) {
+    public void correctXAxis(boolean frontSensorDetected) {
 
+            boolean detected = frontSensorDetected;
 
+            while (!detected && gamepad1.y && increment < 1.0) {
 
-        boolean xAxisSet = false;
-
-        if (rightSensorDetected && leftSensorDetected) {
-            xAxisSet = true;
-        }
-
-        if (!leftSensorDetected && !rightSensorDetected) {
-
-            smoothMovePower("left", 1.0, 3.0);
-            smoothMovePower("right", 1.0, 6.0);
-        }
-
-
-        while (!xAxisSet) {
-
-            if (leftSensorDetected && !rightSensorDetected) {
-
-                smoothMovePowerinstant("left", 0.5);
-            }
-
-            if (!leftSensorDetected && rightSensorDetected) {
-
-                smoothMovePowerinstant("right", 0.5);
-            }
+            smoothMovePower("left", .2, increment);
+            increment *=2;
+            smoothMovePower("right", .2, increment);
+            increment *=2;
 
         }
+            stop();
     }
 
     public void correctYAxis(double length) {
@@ -474,7 +458,7 @@ public class AutoSensorStuff extends OpMode {
 
     public void autoPlace() {
 
-        while (gamepad1.right_trigger > 50.0) {
+        while (gamepad1.right_trigger < 50.0) {
 
             //orient();
 
@@ -601,10 +585,15 @@ public class AutoSensorStuff extends OpMode {
 
 
         if (gamepad1.y){}
-        if (gamepad1.a){
-            correctXAxis(Cdetects, Adetects);
+
+
+        while (gamepad1.a){
+            correctXAxis(Cdetects);
         }
+
+
         if (gamepad1.b)
+            stop();
 
 
 
