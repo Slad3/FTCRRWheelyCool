@@ -37,8 +37,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Testing Auto Stuff", group = "K9bot")
 //@Autonomous(...) is the other common choice
-@Disabled
-public class MRI_Color_Sensors extends OpMode {
+//@Disabled
+public class AutoSensorStuff extends OpMode {
 
     /* Declare OpMode members. */
     HardwareK9bot robot = new HardwareK9bot();
@@ -62,6 +62,8 @@ public class MRI_Color_Sensors extends OpMode {
     double backRight;
     double Lift;
     boolean red, blue, green;
+    boolean Adetects;
+    boolean Cdetects;
 
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
@@ -273,114 +275,7 @@ public class MRI_Color_Sensors extends OpMode {
         }
     }
 
-    //Make the sensors actually sensor
 
-    public void correctXAxis() {
-
-
-
-        boolean xAxisSet = false;
-        boolean rightSensorDetected = false;
-        boolean leftSensorDetected = false;
-
-        if (rightSensorDetected && leftSensorDetected) {
-            xAxisSet = true;
-        }
-
-        if (!leftSensorDetected && !rightSensorDetected) {
-
-            smoothMovePower("left", 1.0, 3.0);
-            smoothMovePower("right", 1.0, 6.0);
-        }
-
-
-        while (!xAxisSet) {
-
-            if (leftSensorDetected && !rightSensorDetected) {
-
-                smoothMovePowerinstant("left", 0.5);
-            }
-
-            if (!leftSensorDetected && rightSensorDetected) {
-
-                smoothMovePowerinstant("right", 0.5);
-            }
-
-        }
-    }
-
-    public void correctYAxis(double length) {
-        //Use distace to wall to correct the Y axis
-        boolean distanceSet = false;
-        while (distanceSet /*sensor lengthn > length*/) {
-            smoothMovePowerinstant("forward", 1.0);
-        }
-
-    }
-
-    //Connect the sensor to the method
-    public void correctZAxis() {
-
-
-        boolean blockPresent = false;   //Change to be the sensor
-        //Detects if block is in a location
-        while (!blockPresent) {
-            robot.Lift.setPower(1000);
-        }
-
-    }
-
-    public void release() {
-
-        //let go of both servos
-
-
-        //raise lift above the block to prevent tipping
-        robot.Lift.setPower(1);
-
-        //smoothMovePower("backwards", 1.0, .5);
-
-        //return;
-
-    }
-
-    public void orient() {
-        //Compares current orientations to preset orientation
-
-        //correctYaw(presetYaw);
-
-        //correctXAxis();
-
-        //correctYAxis(general distance);
-
-        //correctZAxis();
-
-        //correctXAxis();
-
-        //correctYAxis(A lot closer to the walll);
-
-
-    }
-
-    public void autoPlace() {
-
-        while (!gamepad1.x) {
-
-            //orient();
-
-            //pauses for 1.5 seconds for human confirmation
-            //sleep(1.5);
-
-            // while (/*Until block is in place/sensor detects that block is in place*/)
-            //move forward very slowly
-
-
-            //release();
-        }
-        return;
-    }
-
-    //This function turns a number of degrees compared to where the robot is. Positive numbers turn left.
     public void turn(int target) throws InterruptedException {
         turnAbsolute(target + mrGyro.getHeading());
     }
@@ -486,7 +381,123 @@ public class MRI_Color_Sensors extends OpMode {
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
      */
-    @Override
+
+
+
+
+    //Make the sensors actually sensor
+
+    public void correctXAxis(boolean leftSensorDetected, boolean rightSensorDetected) {
+
+
+
+        boolean xAxisSet = false;
+
+        if (rightSensorDetected && leftSensorDetected) {
+            xAxisSet = true;
+        }
+
+        if (!leftSensorDetected && !rightSensorDetected) {
+
+            smoothMovePower("left", 1.0, 3.0);
+            smoothMovePower("right", 1.0, 6.0);
+        }
+
+
+        while (!xAxisSet) {
+
+            if (leftSensorDetected && !rightSensorDetected) {
+
+                smoothMovePowerinstant("left", 0.5);
+            }
+
+            if (!leftSensorDetected && rightSensorDetected) {
+
+                smoothMovePowerinstant("right", 0.5);
+            }
+
+        }
+    }
+
+    public void correctYAxis(double length) {
+        //Use distace to wall to correct the Y axis
+        boolean distanceSet = false;
+        while (distanceSet /*sensor lengthn > length*/) {
+            smoothMovePowerinstant("forward", 1.0);
+        }
+
+    }
+
+    //Connect the sensor to the method
+    public void correctZAxis() {
+
+
+        boolean blockPresent = false;   //Change to be the sensor
+        //Detects if block is in a location
+        while (!blockPresent) {
+            robot.Lift.setPower(1000);
+        }
+
+    }
+
+    public void release() {
+
+        //let go of both servos
+
+
+        //raise lift above the block to prevent tipping
+        robot.Lift.setPower(1);
+
+        //smoothMovePower("backwards", 1.0, .5);
+
+        //return;
+
+    }
+
+    public void orient() {
+        //Compares current orientations to preset orientation
+
+        //correctYaw(presetYaw);
+
+        //correctXAxis();
+
+        //correctYAxis(general distance);
+
+        //correctZAxis();
+
+        //correctXAxis();
+
+        //correctYAxis(A lot closer to the walll);
+
+
+    }
+
+    public void autoPlace() {
+
+        while (gamepad1.right_trigger > 50.0) {
+
+            //orient();
+
+            //pauses for 1.5 seconds for human confirmation
+            //sleep(1.5);
+
+            // while (/*Until block is in place/sensor detects that block is in place*/)
+            //move forward very slowly
+
+
+            //release();
+
+        }
+
+        //This function turns a number of degrees compared to where the robot is. Positive numbers turn left.
+
+
+    }
+
+
+
+
+        @Override
     public void loop() {
         telemetry.addData("Status", "Running: " + runtime1.toString());
 
@@ -524,6 +535,18 @@ public class MRI_Color_Sensors extends OpMode {
 
         colorAcache = colorAreader.read(0x04, 1);
         colorCcache = colorCreader.read(0x04, 1);
+
+
+
+        if(colorAcache[0] == 8 || colorAcache[0] == 10 || colorAcache[0] == 3)
+            Adetects = true;
+
+        if(colorCcache[0] == 8 || colorCcache[0] == 10 || colorCcache[0] == 3)
+            Cdetects = true;
+
+
+
+
 
 
         if (gamepad2.a)
@@ -571,31 +594,19 @@ public class MRI_Color_Sensors extends OpMode {
         else if (gamepad2.y)
             rightPosition = RIGHT_MAX_RANGE;
 
-        if (gamepad2.x)
-
-        {
-
+        if (gamepad2.x){
             rightPosition = 0.96;
             leftPosition = 0.44;
         }
 
 
-
-
-        if (gamepad1.a)
-            target = target + 45;
+        if (gamepad1.y){}
+        if (gamepad1.a){
+            correctXAxis(Cdetects, Adetects);
+        }
         if (gamepad1.b)
-            target = target - 45;
-        if (target > 360)
-            target -= 360;
-        if (target < 0)
-            target += 360;
-        if (target == 360)
-            target = 0;
 
-        if (gamepad1.y)
 
-            turnAbsolute(target);
 
         if (gamepad1.dpad_up)
 

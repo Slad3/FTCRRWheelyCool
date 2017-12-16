@@ -58,7 +58,7 @@ import java.lang.Math;
  */
 
 @TeleOp(name="Omniwheel_Drive", group="K9bot")
-//@Disabled
+@Disabled
 public class Omniwheel_Drive extends LinearOpMode
 {
 
