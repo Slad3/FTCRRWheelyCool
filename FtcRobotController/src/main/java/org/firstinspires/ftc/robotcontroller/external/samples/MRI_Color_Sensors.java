@@ -37,7 +37,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name = "Testing December 16th", group = "K9bot")
 //@Autonomous(...) is the other common choice
 //@Disabled
-public class MRI_Color_Sensors extends OpMode {
+public class MRI_Color_Sensors extends OpMode
+{
 
     /* Declare OpMode members. */
     HardwareK9bot   robot            =   new HardwareK9bot();
@@ -74,8 +75,6 @@ public class MRI_Color_Sensors extends OpMode {
     I2cDeviceSynch colorAreader;
     I2cDeviceSynch colorCreader;
 
-    //TouchSensor touch;         // Instance of TouchSensor - for changing color sensor mode
-
     boolean buttonState = false;  // Tracks the last known state of the touch sensor
     boolean LEDState = true;     // Tracks the mode of the color sensor; Active = true, Passive = false
 
@@ -91,7 +90,8 @@ public class MRI_Color_Sensors extends OpMode {
     ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
 
     // Sets power of all drive motors to zero.
-    public void stop() {
+    public void stop()
+    {
         robot.FL_drive.setPower(0);
         robot.FR_drive.setPower(0);
         robot.BL_drive.setPower(0);
@@ -325,7 +325,8 @@ public class MRI_Color_Sensors extends OpMode {
      * Code to run ONCE when the driver hits INIT
      */
     @Override
-    public void init() {
+    public void init()
+    {
      /* Initialize the hardware variables.
      * The init() method of the hardware class does all the work here
      */
@@ -353,14 +354,16 @@ public class MRI_Color_Sensors extends OpMode {
     } // Initializes the hardware variables.
 
     @Override
-    public void init_loop() {
+    public void init_loop()
+    {
     }
 
     /*
      * Code to run ONCE when the driver hits PLAY
      */
     @Override
-    public void start() {
+    public void start()
+    {
         runtime.reset();
 
         while (mrGyro.isCalibrating()) { //Ensure calibration is complete (usually 2 seconds)
@@ -382,7 +385,9 @@ public class MRI_Color_Sensors extends OpMode {
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
      */
     @Override
-    public void loop() {
+    public void loop()
+    {
+
         telemetry.addData("Status", "Running: " + runtime1.toString());
 
         // zAccumulated = mrGyro.getIntegratedZValue();  // Set variables to gyro readings
@@ -390,7 +395,8 @@ public class MRI_Color_Sensors extends OpMode {
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         heading = cleanUp(heading);
 
-        if (firstCycle) {
+        if (firstCycle)
+        {
             temp = heading;
             movePower("rightTurn", 0.5, 1);
             heading = cleanUp(360 - mrGyro.getHeading());  // Reverse direction of heading to match the integrated value.
