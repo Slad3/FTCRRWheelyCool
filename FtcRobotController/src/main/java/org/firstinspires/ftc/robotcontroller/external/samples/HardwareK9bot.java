@@ -31,6 +31,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.I2cSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -64,9 +65,9 @@ public class HardwareK9bot
     public DcMotor  Lift  =     null;
     public Servo    Left         = null;
     public Servo    Right        = null;
-    public I2cSensor colorA = null;
-    public I2cSensor colorC = null;
-    //public ColorSensor color_sensor;
+    public Servo    BallArm     = null;
+    public I2cDevice ballSensor = null;
+    public I2cDevice colorC = null;
 
     public final static double LEFT_HOME = 0.57;
     public final static double RIGHT_HOME = 0.27;
@@ -74,7 +75,8 @@ public class HardwareK9bot
     public final static double LEFT_MAX_RANGE  = 0.85;
     public final static double RIGHT_MIN_RANGE  = 0.05;
     public final static double RIGHT_MAX_RANGE  = 0.85;
-
+    public final static double BALL_ARM_UP = .90;
+    public final static double BALL_ARM_DOWN = .70;
     /* Local OpMode members. */
     HardwareMap hwMap  = null;
     private ElapsedTime period  = new ElapsedTime();
@@ -82,6 +84,10 @@ public class HardwareK9bot
     /* Constructor */
     public HardwareK9bot() {
     }
+
+
+
+
 
     /* Initialize standard Hardware interfaces */
     public void init(HardwareMap ahwMap) {
@@ -120,10 +126,16 @@ public class HardwareK9bot
         // Define and initialize ALL installed servos.
         Left  = hwMap.get(Servo.class, "Left");
         Right = hwMap.get(Servo.class, "Right");
+        BallArm = hwMap.get(Servo.class, "BallArm");
+        //the below lines set up the configuration file
+        ballSensor = hwMap.i2cDevice.get("colorA");  //Ball Sensor is formally known as colorA
+        colorC = hwMap.i2cDevice.get("colorC");
+
         //colorA= hwMap.get(I2cSensor.class, "ca");
         //colorC = hwMap.get(I2cSensor.class, "cc");
         Left.setPosition(LEFT_HOME);
         Right.setPosition(RIGHT_HOME);
+        BallArm.setPosition(BALL_ARM_UP);
     }
 }
 

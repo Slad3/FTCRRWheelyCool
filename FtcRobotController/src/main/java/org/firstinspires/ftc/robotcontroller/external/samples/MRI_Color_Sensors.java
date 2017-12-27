@@ -67,12 +67,12 @@ public class MRI_Color_Sensors extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
 
-    byte[] colorAcache;
+    byte[] ballSensorcache;
     byte[] colorCcache;
 
-    I2cDevice colorA;
+    I2cDevice ballSensor;
     I2cDevice colorC;
-    I2cDeviceSynch colorAreader;
+    I2cDeviceSynch ballSensorreader;
     I2cDeviceSynch colorCreader;
 
     boolean buttonState = false;  // Tracks the last known state of the touch sensor
@@ -335,13 +335,13 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("Status", "Initialized");
 
         //the below lines set up the configuration file
-        colorA = hardwareMap.i2cDevice.get("colorA");
+        ballSensor = hardwareMap.i2cDevice.get("ballSensor");
         colorC = hardwareMap.i2cDevice.get("colorC");
 
-        colorAreader = new I2cDeviceSynchImpl(colorA, I2cAddr.create8bit(0x3a), false);
+        ballSensorreader = new I2cDeviceSynchImpl(ballSensor, I2cAddr.create8bit(0x3a), false);
         colorCreader = new I2cDeviceSynchImpl(colorC, I2cAddr.create8bit(0x3c), false);
 
-        colorAreader.engage();
+        ballSensorreader.engage();
         colorCreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  // Point to the gyro in the configuration file
@@ -370,11 +370,11 @@ public class MRI_Color_Sensors extends OpMode
         }
 
         if(LEDState){
-            colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+            ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
             colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
         }
         else{
-            colorAreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+            ballSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
             colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
         }
         //Active - For measuring reflected light. Cancels out ambient light
@@ -423,12 +423,12 @@ public class MRI_Color_Sensors extends OpMode
             LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
             if(LEDState)
             {
-                colorAreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+                ballSensorreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
                 colorCreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
             }
             else
             {
-                colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+                ballSensorreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
                 colorCreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
             }
         }
@@ -436,7 +436,7 @@ public class MRI_Color_Sensors extends OpMode
         if (!gamepad1.x) // If the touch sensor is now pressed
             buttonState = false;                  // Set the buttonState to false to indicate that the touch sensor was released
 
-        colorAcache = colorAreader.read(0x04, 1);
+        ballSensorcache = ballSensorreader.read(0x04, 1);
         colorCcache = colorCreader.read(0x04, 1);
 
         if (gamepad2.a)
@@ -515,10 +515,10 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("Lift", "%.2f", Lift);
 
         // Display values
-        telemetry.addData("1 #A", colorAcache[0] & 0xFF);
+        telemetry.addData("1 #A", ballSensorcache[0] & 0xFF);
         telemetry.addData("2 #C", colorCcache[0] & 0xFF);
 
-        telemetry.addData("3 A", colorAreader.getI2cAddress().get8Bit());
+        telemetry.addData("3 A", ballSensorreader.getI2cAddress().get8Bit());
         telemetry.addData("4 A", colorCreader.getI2cAddress().get8Bit());
 
         telemetry.addData("1. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen

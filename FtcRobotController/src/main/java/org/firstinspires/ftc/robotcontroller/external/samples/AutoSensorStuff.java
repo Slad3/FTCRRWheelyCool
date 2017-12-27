@@ -54,6 +54,8 @@ public class AutoSensorStuff extends OpMode {
     //final double    RIGHT_MIN_RANGE  =   robot.RIGHT_MIN_RANGE;
     final double LEFT_SPEED = 0.03;                            // sets rate to move servo
     final double RIGHT_SPEED = 0.03;
+    final double BALL_ARM_DOWN = robot.BALL_ARM_DOWN;
+    final double BALL_ARM_UP = robot.BALL_ARM_UP;
 
     // sets rates
     double frontLeft;
@@ -69,12 +71,12 @@ public class AutoSensorStuff extends OpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
 
-    byte[] colorAcache;
+    byte[] ballSensorcache;
     byte[] colorCcache;
 
-    I2cDevice colorA;
+    I2cDevice ballSensor;
     I2cDevice colorC;
-    I2cDeviceSynch colorAreader;
+    I2cDeviceSynch ballSensorreader;
     I2cDeviceSynch colorCreader;
 
     //TouchSensor touch;         //Instance of TouchSensor - for changing color sensor mode
@@ -352,14 +354,11 @@ public class AutoSensorStuff extends OpMode {
 
         telemetry.addData("Status", "Initialized");
 
-        //the below lines set up the configuration file
-        colorA = hardwareMap.i2cDevice.get("colorA");
-        colorC = hardwareMap.i2cDevice.get("colorC");
 
-        colorAreader = new I2cDeviceSynchImpl(colorA, I2cAddr.create8bit(0x3a), false);
+        ballSensorreader = new I2cDeviceSynchImpl(ballSensor, I2cAddr.create8bit(0x3a), false);
         colorCreader = new I2cDeviceSynchImpl(colorC, I2cAddr.create8bit(0x3c), false);
 
-        colorAreader.engage();
+        ballSensorreader.engage();
         colorCreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  //Point to the gyro in the configuration file
@@ -386,14 +385,17 @@ public class AutoSensorStuff extends OpMode {
         }
 
         if (LEDState) {
-            colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+            ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
             colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
         } else {
-            colorAreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+            ballSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
             colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
         }
         //Active - For measuring reflected light. Cancels out ambient light
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
+
+        ballSensorcache = ballSensorreader.read(0x04, 1);
+        colorCcache = colorCreader.read(0x04, 1);
     }
 
     /*
@@ -404,6 +406,46 @@ public class AutoSensorStuff extends OpMode {
 
 
     //Make the sensors actually sensor
+
+    public void knockBall (String color){
+
+        String ballColor;
+
+
+        robot.BallArm.setPosition(BALL_ARM_DOWN);
+
+            switch(ballSensorcache[0]){
+
+                case 10:
+                    ballColor = "red";
+                    break;
+
+                case 3:
+                    ballColor = "blue";
+                    break;
+
+                default:
+                    ballColor = "blue";
+
+            }
+
+            if (color == ballColor){
+                smoothMovePower("rightTurn", .25, .5);
+                robot.BallArm.setPosition(BALL_ARM_UP);
+                smoothMovePower("leftTurn", .25, .3);
+            }
+            else{
+                smoothMovePower("leftTurn", .25, .5);
+                robot.BallArm.setPosition(BALL_ARM_UP);
+                smoothMovePower("rightTurn", .25, .3);
+            }
+
+
+        }
+
+
+
+
 
     public void correctXAxis(boolean frontSensorDetected) {
 
@@ -521,10 +563,10 @@ public class AutoSensorStuff extends OpMode {
             buttonState = true;                   //Change touch state to true because the touch sensor is now pressed
             LEDState = !LEDState;                //Change the LEDState to the opposite of what it was
             if (LEDState) {
-                colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+                ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
                 colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
             } else {
-                colorAreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+                ballSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
                 colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
             }
         }
@@ -534,16 +576,19 @@ public class AutoSensorStuff extends OpMode {
         }
 
 
-        colorAcache = colorAreader.read(0x04, 1);
+        ballSensorcache = ballSensorreader.read(0x04, 1);
         colorCcache = colorCreader.read(0x04, 1);
 
 
 
-        if(colorAcache[0] == 8 || colorAcache[0] == 10 || colorAcache[0] == 3)
+        if(ballSensorcache[0] == 8 || ballSensorcache[0] == 10 || ballSensorcache[0] == 3)
             Adetects = true;
 
         if(colorCcache[0] == 8 || colorCcache[0] == 10 || colorCcache[0] == 3)
             Cdetects = true;
+
+
+
 
 
 
@@ -643,10 +688,10 @@ public class AutoSensorStuff extends OpMode {
         telemetry.addData("Lift", "%.2f", Lift);
 
         //display values
-        telemetry.addData("1 #A", colorAcache[0] & 0xFF);
+        telemetry.addData("1 #A", ballSensorcache[0] & 0xFF);
         telemetry.addData("2 #C", colorCcache[0] & 0xFF);
 
-        telemetry.addData("3 A", colorAreader.getI2cAddress().
+        telemetry.addData("3 A", ballSensorreader.getI2cAddress().
 
                 get8Bit());
         telemetry.addData("4 A", colorCreader.getI2cAddress().
