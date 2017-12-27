@@ -46,9 +46,9 @@ public class AutoSensorStuff extends OpMode {
     double rightPosition = robot.RIGHT_HOME;                 // Servo safe position
     double liftSpeed = 1;
     double driveSpeed = 1;
-    //final double    LEFT_HOME        =   robot.LEFT_HOME;
-    //final double    RIGHT_HOME       =   robot.RIGHT_HOME;
-    //final double    LEFT_MAX_RANGE   =   robot.LEFT_MAX_RANGE;
+    final double    LEFT_HOME        =   robot.LEFT_HOME;
+    final double    RIGHT_HOME       =   robot.RIGHT_HOME;
+    final double    LEFT_MAX_RANGE   =   robot.LEFT_MAX_RANGE;
     final double LEFT_MIN_RANGE = robot.LEFT_MIN_RANGE;
     final double RIGHT_MAX_RANGE = robot.RIGHT_MAX_RANGE;
     //final double    RIGHT_MIN_RANGE  =   robot.RIGHT_MIN_RANGE;
@@ -444,10 +444,11 @@ public class AutoSensorStuff extends OpMode {
     public void release() {
 
         //let go of both servos
-
+        leftPosition = 12; //slightly offset of straight out
+        rightPosition = 107;//slightly offset of straight out
 
         //raise lift above the block to prevent tipping
-        robot.Lift.setPower(1);
+        smoothMovePower("lift", .5, 3.0);
 
         smoothMovePower("backwards", .5, 2.0);
 
