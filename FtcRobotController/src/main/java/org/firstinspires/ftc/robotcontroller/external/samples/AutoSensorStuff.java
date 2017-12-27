@@ -159,6 +159,13 @@ public class AutoSensorStuff extends OpMode {
                     robot.BR_drive.setPower(power * -1);
                 }
                 break;
+
+            case "lift":
+                runtime.reset();
+                while (runtime.seconds() < duration) {
+                    robot.Lift.setPower(power);
+                }
+                break;
         }
         stop();
     }
@@ -225,7 +232,15 @@ public class AutoSensorStuff extends OpMode {
                     robot.BR_drive.setPower(power * -1);
                 }
                 break;
+
+            case "lift":
+                runtime.reset();
+                while (runtime.seconds() < duration) {
+                    robot.Lift.setPower(power);
+                }
+                break;
         }
+        stop();
     }
 
     public void smoothMovePowerinstant(String movement, double power) {
@@ -273,6 +288,8 @@ public class AutoSensorStuff extends OpMode {
                 robot.BL_drive.setPower(power * -1);
                 robot.BR_drive.setPower(power * -1);
                 break;
+
+
         }
     }
 
@@ -432,9 +449,8 @@ public class AutoSensorStuff extends OpMode {
         //raise lift above the block to prevent tipping
         robot.Lift.setPower(1);
 
-        //smoothMovePower("backwards", 1.0, .5);
+        smoothMovePower("backwards", .5, 2.0);
 
-        //return;
 
     }
 
@@ -463,10 +479,10 @@ public class AutoSensorStuff extends OpMode {
             //orient();
 
             //pauses for 1.5 seconds for human confirmation
-            //sleep(1.5);
+            smoothMovePower("stop", 1.0, 1.5);
 
             // while (/*Until block is in place/sensor detects that block is in place*/)
-            //move forward very slowly
+            smoothMovePowerinstant("forward", 0.1);
 
 
             //release();
