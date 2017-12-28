@@ -3,7 +3,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
 /*
 Modern Robotics Color Sensors Example with color number
-Created 9/29/2016 by Cqaolton Mehlhoff of Modern Robotics using FTC SDK 2.2
+Created 9/29/2016 by Colton Mehlhoff of Modern Robotics using FTC SDK 2.2
 Reuse permitted with credit where credit is due
 
 Configuration:
