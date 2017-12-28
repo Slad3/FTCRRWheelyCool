@@ -109,8 +109,9 @@ public class HardwareK9bot
         BR_drive.setPower(0);
         Lift.setPower(0);
 
-        // Set all motors to run without encoders.
-        // May want to use RUN_USING_ENCODERS if encoders are installed.
+        /* Set all motors to run without encoders.
+        /  May want to use RUN_USING_ENCODERS if encoders are installed.
+        */
         FL_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FR_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BL_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
