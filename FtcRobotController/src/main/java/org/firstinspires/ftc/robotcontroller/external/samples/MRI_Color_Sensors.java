@@ -28,7 +28,7 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name = "Testing December 29th", group = "K9bot")
+@TeleOp(name = "Testing December 28th", group = "K9bot")
 //@Autonomous(...) is the other common choice
 //@Disabled
 public class MRI_Color_Sensors extends OpMode
@@ -48,8 +48,8 @@ public class MRI_Color_Sensors extends OpMode
     final double    LEFT_MIN_RANGE   =   robot.LEFT_MIN_RANGE;
     final double    RIGHT_MAX_RANGE  =   robot.RIGHT_MAX_RANGE;
     //final double    RIGHT_MIN_RANGE  =   robot.RIGHT_MIN_RANGE;
-    final double    LEFT_SPEED       =   0.03 ;                            // Sets rate to move servo
-    final double    RIGHT_SPEED      =   0.03 ;
+    final double    LEFT_SPEED       =   0.03;                            // Sets rate to move servo
+    final double    RIGHT_SPEED      =   0.03;
 
     // Sets rates
     double frontLeft;
@@ -331,7 +331,7 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("Status", "Initialized");
 
         //the below lines set up the configuration file
-        ballSensor = hardwareMap.i2cDevice.get("colorA");
+        ballSensor = hardwareMap.i2cDevice.get("ballSensor");
         colorC = hardwareMap.i2cDevice.get("colorC");
 
         ballSensorreader = new I2cDeviceSynchImpl(ballSensor, I2cAddr.create8bit(0x3a), false);
@@ -488,16 +488,10 @@ public class MRI_Color_Sensors extends OpMode
         }
 
         if (gamepad2.dpad_up)
-            ballPosition++;
+            ballPosition = 0.01;
 
         if (gamepad2.dpad_down)
-            ballPosition--;
-
-        if (gamepad2.dpad_right)
-            frontPosition++;
-
-        if (gamepad2.dpad_left)
-            frontPosition--;
+            ballPosition -= 0.01;
 
         robot.FL_drive.setPower(frontLeft);
         robot.FR_drive.setPower(frontRight);
@@ -516,6 +510,8 @@ public class MRI_Color_Sensors extends OpMode
         // Send telemetry message to signify robot running;
         telemetry.addData("Left", "%.2f", leftPosition);
         telemetry.addData("Right", "%.2f", rightPosition);
+        telemetry.addData("Front", "%.2f", frontPosition);
+        telemetry.addData("Ball", "%.2f", ballPosition);
 
         /*
         telemetry.addData("frontLeft", "%.2f", frontLeft);
