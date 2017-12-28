@@ -257,6 +257,8 @@ public class MRI_Color_Sensors extends OpMode
         {
             while (Math.abs(heading - target) > 180)
             {  //Continue while the robot direction is further than 180 degrees from the target
+                if (Math.abs(heading - target) > 350)
+                    break;
                 if (heading < target)
                     smoothMovePower("leftTurn", 1, 0.5);
                 if (heading > target)
@@ -268,6 +270,8 @@ public class MRI_Color_Sensors extends OpMode
 
             while (Math.abs(heading - target) > 90)
             {  //Continue while the robot direction is further than 90 degrees from the target
+                if (Math.abs(heading - target) > 350)
+                    break;
                 if (heading > target)
                     smoothMovePower("leftTurn", 1, 0.5);
                 if (heading < target)
@@ -279,6 +283,8 @@ public class MRI_Color_Sensors extends OpMode
 
             while (Math.abs(heading - target) > 45)
             {  //Continue while the robot direction is further than 45 degrees from the target
+                if (Math.abs(heading - target) > 350)
+                    break;
                 if (heading > target)
                     smoothMovePower("leftTurn", 1, 0.25);
                 if (heading < target)
