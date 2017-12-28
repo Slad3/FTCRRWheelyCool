@@ -88,12 +88,9 @@ public class AutoSensorStuff extends OpMode {
     private ElapsedTime runtime1 = new ElapsedTime();
 
     byte[] ballSensorcache;
-    byte[] colorCcache;
 
     I2cDevice ballSensor;
-    I2cDevice colorC;
     I2cDeviceSynch ballSensorreader;
-    I2cDeviceSynch colorCreader;
 
     //TouchSensor touch;         //Instance of TouchSensor - for changing color sensor mode
 
@@ -372,10 +369,8 @@ public class AutoSensorStuff extends OpMode {
 
 
         ballSensorreader = new I2cDeviceSynchImpl(ballSensor, I2cAddr.create8bit(0x3a), false);
-        colorCreader = new I2cDeviceSynchImpl(colorC, I2cAddr.create8bit(0x3c), false);
 
         ballSensorreader.engage();
-        colorCreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  //Point to the gyro in the configuration file
         mrGyro = (ModernRoboticsI2cGyro) sensorGyro;      //ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
@@ -410,16 +405,15 @@ public class AutoSensorStuff extends OpMode {
 
         if (LEDState) {
             ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+
         } else {
             ballSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+
         }
         //Active - For measuring reflected light. Cancels out ambient light
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
 
         ballSensorcache = ballSensorreader.read(0x04, 1);
-        colorCcache = colorCreader.read(0x04, 1);
     }
 
     /*
@@ -598,20 +592,17 @@ public class AutoSensorStuff extends OpMode {
 
          //If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
                 ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+              //Set the mode of the color sensor using LEDState
 
 
 
         ballSensorcache = ballSensorreader.read(0x04, 1);
-        colorCcache = colorCreader.read(0x04, 1);
 
 
 
         if(ballSensorcache[0] == 8 || ballSensorcache[0] == 10 || ballSensorcache[0] == 3)
             Adetects = true;
 
-        if(colorCcache[0] == 8 || colorCcache[0] == 10 || colorCcache[0] == 3)
-            Cdetects = true;
 
 
 
@@ -717,14 +708,11 @@ public class AutoSensorStuff extends OpMode {
 
         //display values
         telemetry.addData("1 #A", ballSensorcache[0] & 0xFF);
-        telemetry.addData("2 #C", colorCcache[0] & 0xFF);
 
         telemetry.addData("3 A", ballSensorreader.getI2cAddress().
 
                 get8Bit());
-        telemetry.addData("4 A", colorCreader.getI2cAddress().
 
-                get8Bit());
         telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
         telemetry.addData("ODS", range1Cache[1] & 0xFF);
         telemetry.addData("1. heading", String.format("%03d", heading));  //Display variables to Driver Station Screen
