@@ -331,7 +331,7 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("Status", "Initialized");
 
         //the below lines set up the configuration file
-        ballSensor = hardwareMap.i2cDevice.get("ballSensor");
+        ballSensor = hardwareMap.i2cDevice.get("colorA");
         colorC = hardwareMap.i2cDevice.get("colorC");
 
         ballSensorreader = new I2cDeviceSynchImpl(ballSensor, I2cAddr.create8bit(0x3a), false);
