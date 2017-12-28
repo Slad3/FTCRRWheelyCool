@@ -421,21 +421,21 @@ public class MRI_Color_Sensors extends OpMode
         // The below two if() statements ensure that the mode of the color sensor is changed only once each time the touch sensor is pressed.
         // The mode of the color sensor is saved to the sensor's long term memory. Just like flash drives, the long term memory has a life time in the 10s or 100s of thousands of cycles.
         // This seems like a lot but if your program wrote to the long term memory every time though the main loop, it would shorten the life of your sensor.
-            if (!buttonState && gamepad1.x)  // If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
+        if (!buttonState && gamepad1.x)  // If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
+        {
+            buttonState = true;                   // Change touch state to true because the touch sensor is now pressed
+            LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
+            if (LEDState)
             {
-                buttonState = true;                   // Change touch state to true because the touch sensor is now pressed
-                LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
-                if (LEDState)
-                {
-                    ballSensorreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
-                    colorCreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
-                }
-                else
-                {
-                    ballSensorreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
-                    colorCreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
-                }
+                ballSensorreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+                colorCreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
             }
+            else
+            {
+                ballSensorreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+                colorCreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+            }
+        }
 
         if (!gamepad1.x)                        // If the touch sensor is now pressed
             buttonState = false;                // Set the buttonState to false to indicate that the touch sensor was released
@@ -488,7 +488,7 @@ public class MRI_Color_Sensors extends OpMode
         }
 
         if (gamepad2.dpad_up)
-            ballPosition = 0.01;
+            ballPosition += 0.01;
 
         if (gamepad2.dpad_down)
             ballPosition -= 0.01;
