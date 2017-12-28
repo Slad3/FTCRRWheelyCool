@@ -75,8 +75,8 @@ public class HardwareK9bot
     public final static double LEFT_MAX_RANGE  = 0.85;
     public final static double RIGHT_MIN_RANGE  = 0.05;
     public final static double RIGHT_MAX_RANGE  = 0.85;
-    public final static double BALL_ARM_UP = .90;
-    public final static double BALL_ARM_DOWN = .70;
+    public final static double BALL_ARM_UP = .0;
+    public final static double BALL_ARM_DOWN = .9;
     /* Local OpMode members. */
     HardwareMap hwMap  = null;
     private ElapsedTime period  = new ElapsedTime();
