@@ -545,4 +545,3 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.update(); // Limited to 100x per second
     }
 }
-
