@@ -32,7 +32,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.util.ElapsedTime;
+
 
 //Testing
 @TeleOp(name = "Testing Auto Stuff", group = "K9bot")
@@ -68,16 +68,29 @@ public class AutoSensorStuff extends OpMode {
     boolean Cdetects;
     double increment = .1;
 
+
+
+
+    byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
+
+    I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); //Default I2C address for MR Range (7-bit)
+    public static final int RANGE1_REG_START = 0x04; //Register to start reading
+    public static final int RANGE1_READ_LENGTH = 2; //Number of byte to read
+
+    public I2cDevice RANGE1;
+    public I2cDeviceSynch RANGE1Reader;
+
+
+
+
+
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
 
     byte[] ballSensorcache;
-    byte[] colorCcache;
 
     I2cDevice ballSensor;
-    I2cDevice colorC;
     I2cDeviceSynch ballSensorreader;
-    I2cDeviceSynch colorCreader;
 
     //TouchSensor touch;         //Instance of TouchSensor - for changing color sensor mode
 
@@ -356,17 +369,23 @@ public class AutoSensorStuff extends OpMode {
 
 
         ballSensorreader = new I2cDeviceSynchImpl(ballSensor, I2cAddr.create8bit(0x3a), false);
-        colorCreader = new I2cDeviceSynchImpl(colorC, I2cAddr.create8bit(0x3c), false);
 
         ballSensorreader.engage();
-        colorCreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  //Point to the gyro in the configuration file
         mrGyro = (ModernRoboticsI2cGyro) sensorGyro;      //ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
         mrGyro.calibrate();  //Calibrate the sensor so it knows where 0 is and what still is. DO NOT MOVE SENSOR WHILE BLUE LIGHT IS SOLID
 
+        RANGE1 = hardwareMap.i2cDevice.get("range");
+        RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
+        RANGE1Reader.engage();
+
+
         telemetry.addData("Say", "Hello Driver");    //
         telemetry.update();
+
+
+
 
     }
 
@@ -386,16 +405,15 @@ public class AutoSensorStuff extends OpMode {
 
         if (LEDState) {
             ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+
         } else {
             ballSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+
         }
         //Active - For measuring reflected light. Cancels out ambient light
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
 
         ballSensorcache = ballSensorreader.read(0x04, 1);
-        colorCcache = colorCreader.read(0x04, 1);
     }
 
     /*
@@ -451,7 +469,7 @@ public class AutoSensorStuff extends OpMode {
 
             boolean detected = frontSensorDetected;
 
-            while (!detected && gamepad1.y && increment < 1.0) {
+            while (!detected && increment < 1.0) {
 
             smoothMovePower("left", .2, increment);
             increment *=2;
@@ -552,6 +570,14 @@ public class AutoSensorStuff extends OpMode {
 
         //zAccumulated = mrGyro.getIntegratedZValue();  //Set variables to gyro readings
 
+
+            range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+
+
+
+
+
+
         heading = 360 - mrGyro.getHeading();  //Reverse direction of heading to match the integrated value
         if (heading == 360)
             heading = 0;
@@ -566,20 +592,17 @@ public class AutoSensorStuff extends OpMode {
 
          //If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
                 ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+              //Set the mode of the color sensor using LEDState
 
 
 
         ballSensorcache = ballSensorreader.read(0x04, 1);
-        colorCcache = colorCreader.read(0x04, 1);
 
 
 
         if(ballSensorcache[0] == 8 || ballSensorcache[0] == 10 || ballSensorcache[0] == 3)
             Adetects = true;
 
-        if(colorCcache[0] == 8 || colorCcache[0] == 10 || colorCcache[0] == 3)
-            Cdetects = true;
 
 
 
@@ -640,7 +663,9 @@ public class AutoSensorStuff extends OpMode {
         }
 
 
-        if (gamepad1.y){}
+        if (gamepad1.y){
+            release();
+        }
 
 
         while (gamepad1.a){
@@ -683,15 +708,13 @@ public class AutoSensorStuff extends OpMode {
 
         //display values
         telemetry.addData("1 #A", ballSensorcache[0] & 0xFF);
-        telemetry.addData("2 #C", colorCcache[0] & 0xFF);
 
         telemetry.addData("3 A", ballSensorreader.getI2cAddress().
 
                 get8Bit());
-        telemetry.addData("4 A", colorCreader.getI2cAddress().
 
-                get8Bit());
-
+        telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
+        telemetry.addData("ODS", range1Cache[1] & 0xFF);
         telemetry.addData("1. heading", String.format("%03d", heading));  //Display variables to Driver Station Screen
         telemetry.addData("2. target", String.format("%03d", target));
         telemetry.addData("3. X", String.format("%03d", xVal));
