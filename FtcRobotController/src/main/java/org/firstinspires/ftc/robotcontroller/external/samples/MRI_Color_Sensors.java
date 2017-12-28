@@ -355,6 +355,44 @@ public class MRI_Color_Sensors extends OpMode
 
     } // Initializes the hardware variables.
 
+    public void knockBall (String color){
+
+        String ballColor;
+
+
+        robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
+
+        switch(ballSensorcache[0]){
+
+            case 10:
+                ballColor = "red";
+                break;
+
+            case 3:
+                ballColor = "blue";
+                break;
+
+            default:
+                ballColor = "blue";
+
+        }
+
+        if (color == ballColor){
+            smoothMovePower("rightTurn", .25, .5);
+            robot.BallArm.setPosition(robot.BALL_ARM_UP);
+            smoothMovePower("leftTurn", .25, .5);
+        }
+        else{
+            smoothMovePower("leftTurn", .25, .5);
+            robot.BallArm.setPosition(robot.BALL_ARM_UP);
+            smoothMovePower("rightTurn", .25, .5);
+        }
+
+
+    }
+
+
+
     @Override
     public void init_loop()
     {
