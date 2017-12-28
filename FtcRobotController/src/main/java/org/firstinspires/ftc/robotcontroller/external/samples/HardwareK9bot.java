@@ -128,7 +128,7 @@ public class HardwareK9bot
         Right = hwMap.get(Servo.class, "Right");
         BallArm = hwMap.get(Servo.class, "BallArm");
         //the below lines set up the configuration file
-        ballSensor = hwMap.i2cDevice.get("colorA");  //Ball Sensor is formally known as colorA
+        ballSensor = hwMap.i2cDevice.get("ballSensor");  //Ball Sensor is formally known as colorA
         colorC = hwMap.i2cDevice.get("colorC");
 
         //colorA= hwMap.get(I2cSensor.class, "ca");
@@ -136,6 +136,12 @@ public class HardwareK9bot
         Left.setPosition(LEFT_HOME);
         Right.setPosition(RIGHT_HOME);
         BallArm.setPosition(BALL_ARM_UP);
+
+
+
+
+
+
     }
 }
 
