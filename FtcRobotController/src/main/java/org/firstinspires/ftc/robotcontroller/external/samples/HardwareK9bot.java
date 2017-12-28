@@ -66,6 +66,7 @@ public class HardwareK9bot
     public Servo    Left         = null;
     public Servo    Right        = null;
     public Servo    BallArm     = null;
+    public Servo    FrontBoi     = null;
     public I2cDevice ballSensor = null;
     public I2cDevice colorC = null;
 
@@ -77,20 +78,20 @@ public class HardwareK9bot
     public final static double RIGHT_MAX_RANGE  = 0.85;
     public final static double BALL_ARM_UP = .90;
     public final static double BALL_ARM_DOWN = .70;
+    public final static double FRONT_OUT = .90;
+    public final static double FRONT_IN = .70;
     /* Local OpMode members. */
     HardwareMap hwMap  = null;
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
-    public HardwareK9bot() {
+    public HardwareK9bot()
+    {
     }
 
-
-
-
-
     /* Initialize standard Hardware interfaces */
-    public void init(HardwareMap ahwMap) {
+    public void init(HardwareMap ahwMap)
+    {
         // save reference to HW Map
         hwMap = ahwMap;
 
@@ -100,9 +101,6 @@ public class HardwareK9bot
         BL_drive  = hwMap.get(DcMotor.class, "BL_drive");
         BR_drive = hwMap.get(DcMotor.class, "BR_drive");
         Lift = hwMap.get(DcMotor.class, "Lift");
-        //LifterR =  hwMap.get(DcMotor.class, "LifterR");
-        //LifterL =  hwMap.get(DcMotor.class, "LifterL");
-        //colorSensor = hwMap.colorSensor.get("colorSensor");
 
         // Set all motors to zero power
         FL_drive.setPower(0);
@@ -110,8 +108,6 @@ public class HardwareK9bot
         BL_drive.setPower(0);
         BR_drive.setPower(0);
         Lift.setPower(0);
-        //LifterR.setPower(0);
-        //LifterL.setPower(0);
 
         // Set all motors to run without encoders.
         // May want to use RUN_USING_ENCODERS if encoders are installed.
@@ -120,15 +116,15 @@ public class HardwareK9bot
         BL_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BR_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        //LifterR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        //LifterL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Define and initialize ALL installed servos.
         Left  = hwMap.get(Servo.class, "Left");
         Right = hwMap.get(Servo.class, "Right");
         BallArm = hwMap.get(Servo.class, "BallArm");
+        FrontBoi = hwMap.get(Servo.class, "FrontBoi");
+
         //the below lines set up the configuration file
-        ballSensor = hwMap.i2cDevice.get("colorA");  //Ball Sensor is formally known as colorA
+        ballSensor = hwMap.i2cDevice.get("ballSensor");
         colorC = hwMap.i2cDevice.get("colorC");
 
         //colorA= hwMap.get(I2cSensor.class, "ca");
@@ -136,6 +132,7 @@ public class HardwareK9bot
         Left.setPosition(LEFT_HOME);
         Right.setPosition(RIGHT_HOME);
         BallArm.setPosition(BALL_ARM_UP);
+        FrontBoi.setPosition(FRONT_IN);
     }
 }
 

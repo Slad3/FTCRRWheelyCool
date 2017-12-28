@@ -300,7 +300,7 @@ public class AutoSensorStuff extends OpMode {
         turnAbsolute(target + mrGyro.getHeading());
     }
 
-    //This function turns a number of degrees compared to where the robot was when the program started. Positive numbers turn left.
+    // This function turns a number of degrees compared to where the robot was when the program started. Positive numbers turn left.
     public void turnAbsolute(int target) {
         int heading = 360 - mrGyro.getHeading(); //Set variables to gyro readings
 
