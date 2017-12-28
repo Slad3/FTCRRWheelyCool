@@ -451,7 +451,7 @@ public class AutoSensorStuff extends OpMode {
 
             boolean detected = frontSensorDetected;
 
-            while (!detected && gamepad1.y && increment < 1.0) {
+            while (!detected && increment < 1.0) {
 
             smoothMovePower("left", .2, increment);
             increment *=2;
@@ -640,7 +640,9 @@ public class AutoSensorStuff extends OpMode {
         }
 
 
-        if (gamepad1.y){}
+        if (gamepad1.y){
+            release();
+        }
 
 
         while (gamepad1.a){
