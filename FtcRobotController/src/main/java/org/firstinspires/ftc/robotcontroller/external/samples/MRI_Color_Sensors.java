@@ -28,6 +28,7 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+
 @TeleOp(name = "Testing December 28th", group = "K9bot")
 //@Autonomous(...) is the other common choice
 //@Disabled
@@ -64,12 +65,13 @@ public class MRI_Color_Sensors extends OpMode
     private ElapsedTime runtime1 = new ElapsedTime();
 
     byte[] ballSensorcache;
-    byte[] colorCcache;
+    byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
 
     I2cDevice ballSensor;
-    I2cDevice colorC;
     I2cDeviceSynch ballSensorreader;
-    I2cDeviceSynch colorCreader;
+
+    I2cDevice RANGE1;
+    I2cDeviceSynch RANGE1Reader;
 
     boolean buttonState = false;  // Tracks the last known state of the touch sensor
     boolean LEDState = true;     // Tracks the mode of the color sensor; Active = true, Passive = false
@@ -84,6 +86,10 @@ public class MRI_Color_Sensors extends OpMode
 
     GyroSensor sensorGyro;  // General Gyro Sensor allows us to point to the sensor in the configuration file.
     ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
+
+    I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); //Default I2C address for MR Range (7-bit)
+    public static final int RANGE1_REG_START = 0x04; //Register to start reading
+    public static final int RANGE1_READ_LENGTH = 2; //Number of byte to read
 
     // Sets power of all drive motors to zero.
     public void stop()
@@ -338,32 +344,31 @@ public class MRI_Color_Sensors extends OpMode
 
         //the below lines set up the configuration file
         ballSensor = hardwareMap.i2cDevice.get("ballSensor");
-        colorC = hardwareMap.i2cDevice.get("colorC");
 
         ballSensorreader = new I2cDeviceSynchImpl(ballSensor, I2cAddr.create8bit(0x3a), false);
-        colorCreader = new I2cDeviceSynchImpl(colorC, I2cAddr.create8bit(0x3c), false);
 
         ballSensorreader.engage();
-        colorCreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  // Point to the gyro in the configuration file
         mrGyro = (ModernRoboticsI2cGyro)sensorGyro;      // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
         mrGyro.calibrate();  // Calibrate the sensor so it knows where 0 is and what still is. DO NOT MOVE SENSOR WHILE BLUE LIGHT IS SOLID
+
+        RANGE1 = hardwareMap.i2cDevice.get("RANGE1");
+        RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
+        RANGE1Reader.engage();
 
         telemetry.addData("Say", "Hello Driver");    //
         telemetry.update();
 
     } // Initializes the hardware variables.
 
-    public void knockBall (String color){
-
+    public void knockBall (String color, double degreesPer10thSecond)
+    {
         String ballColor;
-
-
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
 
-        switch(ballSensorcache[0]){
-
+        switch(ballSensorcache[0])
+        {
             case 10:
                 ballColor = "red";
                 break;
@@ -374,24 +379,21 @@ public class MRI_Color_Sensors extends OpMode
 
             default:
                 ballColor = "blue";
-
         }
 
-        if (color == ballColor){
-            smoothMovePower("rightTurn", .25, .5);
+        if (color == ballColor)
+        {
+            smoothMovePower("rightTurn", .25, 50 / degreesPer10thSecond);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("leftTurn", .25, .5);
+            smoothMovePower("leftTurn", .25, 50 / degreesPer10thSecond);
         }
-        else{
-            smoothMovePower("leftTurn", .25, .5);
+        else
+        {
+            smoothMovePower("leftTurn", .25, 50 / degreesPer10thSecond);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("rightTurn", .25, .5);
+            smoothMovePower("rightTurn", .25, 50 / degreesPer10thSecond);
         }
-
-
     }
-
-
 
     @Override
     public void init_loop()
@@ -406,16 +408,17 @@ public class MRI_Color_Sensors extends OpMode
     {
         runtime.reset();
 
-        while (mrGyro.isCalibrating()) { //Ensure calibration is complete (usually 2 seconds)
+        while (mrGyro.isCalibrating()) // Ensure calibration is complete (usually 2 seconds)
+        {
         }
 
-        if(LEDState){
+        if(LEDState)
+        {
             ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
         }
-        else{
+        else
+        {
             ballSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
         }
         //Active - For measuring reflected light. Cancels out ambient light
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
@@ -439,19 +442,22 @@ public class MRI_Color_Sensors extends OpMode
         yVal = mrGyro.rawY() / 128;
         zVal = mrGyro.rawZ() / 128;
 
+        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+
         ballSensorcache = ballSensorreader.read(0x04, 1);
-        colorCcache = colorCreader.read(0x04, 1);
 
         if (firstCycle) // This section finds the turning speed of the robot.
         {
+            ballPosition = robot.BALL_ARM_UP;
+            robot.BallArm.setPosition(ballPosition);
             temp = heading;
-            movePower("rightTurn", 0.5, 0.5);
+            movePower("rightTurn", 0.25, 1.0);
             heading = cleanUp(360 - mrGyro.getHeading());  // Reverse direction of heading to match the integrated value.
             temp1 = heading;
             if (temp > temp1)
                 temp1 += 360;
             temp2 = (double) (temp1 - temp);
-            degreesPer10thSecond = temp2 / 5.0; // Saves variable for rest of program.
+            degreesPer10thSecond = temp2 / 10.0; // Saves variable for rest of program.
             firstCycle = false;
         }
 
@@ -472,12 +478,10 @@ public class MRI_Color_Sensors extends OpMode
             if (LEDState)
             {
                 ballSensorreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
             }
             else
             {
                 ballSensorreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
             }
         }
 
@@ -513,6 +517,12 @@ public class MRI_Color_Sensors extends OpMode
         if (gamepad2.b)
             liftSpeed = 0.5;
 
+        if (gamepad2.x)
+        {
+            rightPosition = 0.96;
+            leftPosition = 0.44;
+        }
+
         // Left servo going in means more
         if (gamepad2.left_bumper)
             leftPosition += LEFT_SPEED;
@@ -525,17 +535,14 @@ public class MRI_Color_Sensors extends OpMode
         else if (gamepad2.y)
             rightPosition = RIGHT_MAX_RANGE;
 
-        if (gamepad2.x)
-        {
-            rightPosition = 0.96;
-            leftPosition = 0.44;
-        }
-
         if (gamepad2.dpad_up)
             ballPosition += 0.01;
 
         if (gamepad2.dpad_down)
             ballPosition -= 0.01;
+
+        if (gamepad2.right_trigger > 70)
+            knockBall("red", degreesPer10thSecond);
 
         robot.FL_drive.setPower(frontLeft);
         robot.FR_drive.setPower(frontRight);
@@ -569,16 +576,17 @@ public class MRI_Color_Sensors extends OpMode
 
         // Display values
         telemetry.addData("1 #A", ballSensorcache[0] & 0xFF);
-        telemetry.addData("2 #C", colorCcache[0] & 0xFF);
 
         telemetry.addData("3 A", ballSensorreader.getI2cAddress().get8Bit());
-        telemetry.addData("4 A", colorCreader.getI2cAddress().get8Bit());
 
         telemetry.addData("1. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
         telemetry.addData("2. target", String.format("%03d", target));
         telemetry.addData("3. X", String.format("%03d", xVal));
         telemetry.addData("4. Y", String.format("%03d", yVal));
         telemetry.addData("5. Z", String.format("%03d", zVal));
+
+        telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
+        telemetry.addData("ODS", range1Cache[1] & 0xFF);
 
         telemetry.update(); // Limited to 100x per second
     }

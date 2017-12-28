@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.hardware.configuration.I2cSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
+
 /**
  * This is NOT an opmode.
  *
@@ -68,7 +69,7 @@ public class HardwareK9bot
     public Servo    BallArm     = null;
     public Servo    FrontBoi     = null;
     public I2cDevice ballSensor = null;
-    public I2cDevice colorC = null;
+    public I2cDevice RANGE1 = null;
 
     public final static double LEFT_HOME = 0.57;
     public final static double RIGHT_HOME = 0.27;
@@ -126,10 +127,9 @@ public class HardwareK9bot
 
         //the below lines set up the configuration file
         ballSensor = hwMap.i2cDevice.get("ballSensor");
-        colorC = hwMap.i2cDevice.get("colorC");
+        RANGE1 = hwMap.i2cDevice.get("RANGE1");
 
         //colorA= hwMap.get(I2cSensor.class, "ca");
-        //colorC = hwMap.get(I2cSensor.class, "cc");
         Left.setPosition(LEFT_HOME);
         Right.setPosition(RIGHT_HOME);
         BallArm.setPosition(BALL_ARM_UP);
