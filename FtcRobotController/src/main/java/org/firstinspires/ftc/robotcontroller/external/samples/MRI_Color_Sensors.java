@@ -58,7 +58,7 @@ public class MRI_Color_Sensors extends OpMode
     double backLeft;
     double backRight;
     double Lift;
-    boolean red, blue, green;
+    boolean red, blue;
     boolean firstCycle = true;
 
     private ElapsedTime runtime = new ElapsedTime();
