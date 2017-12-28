@@ -432,12 +432,12 @@ public class AutoSensorStuff extends OpMode {
             if (color == ballColor){
                 smoothMovePower("rightTurn", .25, .5);
                 robot.BallArm.setPosition(BALL_ARM_UP);
-                smoothMovePower("leftTurn", .25, .3);
+                smoothMovePower("leftTurn", .25, .5);
             }
             else{
                 smoothMovePower("leftTurn", .25, .5);
                 robot.BallArm.setPosition(BALL_ARM_UP);
-                smoothMovePower("rightTurn", .25, .3);
+                smoothMovePower("rightTurn", .25, .5);
             }
 
 
@@ -476,6 +476,11 @@ public class AutoSensorStuff extends OpMode {
 
 
         boolean blockPresent = false;   //Change to be the sensor
+
+
+
+
+
         //Detects if block is in a location
         while (!blockPresent) {
             robot.Lift.setPower(1000);
@@ -519,7 +524,7 @@ public class AutoSensorStuff extends OpMode {
 
         while (gamepad1.right_trigger < 50.0) {
 
-            //orient();
+            orient();
 
             //pauses for 1.5 seconds for human confirmation
             smoothMovePower("stop", 1.0, 1.5);
@@ -528,8 +533,9 @@ public class AutoSensorStuff extends OpMode {
             smoothMovePowerinstant("forward", 0.1);
 
 
-            //release();
+            release();
 
+            return;
         }
 
         //This function turns a number of degrees compared to where the robot is. Positive numbers turn left.
@@ -558,22 +564,10 @@ public class AutoSensorStuff extends OpMode {
         //The mode of the color sensor is saved to the sensor's long term memory. Just like flash drives, the long term memory has a life time in the 10s or 100s of thousands of cycles.
         //This seems like a lot but if your program wrote to the long term memory every time though the main loop, it would shorten the life of your sensor.
 
-        if (true) {  //If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
-
-            buttonState = true;                   //Change touch state to true because the touch sensor is now pressed
-            LEDState = !LEDState;                //Change the LEDState to the opposite of what it was
-            if (LEDState) {
+         //If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
                 ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
                 colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-            } else {
-                ballSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
-            }
-        }
 
-        if (true) { //If the touch sensor is now pressed
-            buttonState = false;                  //Set the buttonState to false to indicate that the touch sensor was released
-        }
 
 
         ballSensorcache = ballSensorreader.read(0x04, 1);
