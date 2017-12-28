@@ -66,6 +66,7 @@ public class HardwareK9bot
     public Servo    Left         = null;
     public Servo    Right        = null;
     public Servo    BallArm     = null;
+    public Servo    FrontBoi    = null;
     public I2cDevice ballSensor = null;
     public I2cDevice colorC = null;
 
