@@ -76,6 +76,8 @@ public class HardwareK9bot
     public final static double LEFT_MAX_RANGE  = 0.85;
     public final static double RIGHT_MIN_RANGE  = 0.05;
     public final static double RIGHT_MAX_RANGE  = 0.85;
+    public final static double LEFT_STRAIGHT_OUT = 0.0;
+    public final static double RIGHT_STRIAGHT_OUT = 0.0;
     public final static double BALL_ARM_UP = .00;
     public final static double BALL_ARM_DOWN = .90;
     public final static double FRONT_OUT = .98;

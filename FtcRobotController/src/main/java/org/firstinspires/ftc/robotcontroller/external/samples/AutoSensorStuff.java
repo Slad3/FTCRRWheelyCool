@@ -56,6 +56,8 @@ public class AutoSensorStuff extends OpMode {
     final double RIGHT_SPEED = 0.03;
     final double BALL_ARM_DOWN = robot.BALL_ARM_DOWN;
     final double BALL_ARM_UP = robot.BALL_ARM_UP;
+    final double LEFT_STRAIGHT_OUT = robot.LEFT_STRAIGHT_OUT;
+    final double RIGHT_STRAIGHT_OUT = robot.RIGHT_STRIAGHT_OUT;
 
     // sets rates
     double frontLeft;
@@ -482,6 +484,7 @@ public class AutoSensorStuff extends OpMode {
         while (length < range1Cache[0]) {
             smoothMovePowerinstant("forward", 1.0);
         }
+        stop();
 
     }
 
@@ -505,8 +508,8 @@ public class AutoSensorStuff extends OpMode {
     public void release() {
 
         //let go of both servos
-        leftPosition = 12; //slightly offset of straight out
-        rightPosition = 107;//slightly offset of straight out
+        leftPosition = LEFT_STRAIGHT_OUT; //slightly offset of straight out
+        rightPosition = RIGHT_STRAIGHT_OUT;//slightly offset of straight out
 
         //raise lift above the block to prevent tipping
         smoothMovePower("lift", .5, 3.0);
@@ -599,14 +602,6 @@ public class AutoSensorStuff extends OpMode {
         if (gamepad2.b)
             liftSpeed = 0.5;
 
-
-
-        if (gamepad2.a)
-            movePower("left", 0.5, 0.5);
-
-        if (gamepad2.b)
-
-            movePower("right", 0.5, 0.5);
 
         driveSpeed = 1;
         if (gamepad1.right_bumper)
