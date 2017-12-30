@@ -129,7 +129,6 @@ public class HardwareK9bot
         //the below lines set up the configuration file
         ballSensor = hwMap.i2cDevice.get("ballSensor");
 
-
         //colorA= hwMap.get(I2cSensor.class, "ca");
         //colorC = hwMap.get(I2cSensor.class, "cc");
         Left.setPosition(LEFT_HOME);
