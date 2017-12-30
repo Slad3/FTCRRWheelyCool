@@ -37,7 +37,6 @@ import com.qualcomm.robotcore.hardware.configuration.I2cSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
-
 /**
  * This is NOT an opmode.
  *
@@ -110,9 +109,8 @@ public class HardwareK9bot
         BR_drive.setPower(0);
         Lift.setPower(0);
 
-        /* Set all motors to run without encoders.
-        /  May want to use RUN_USING_ENCODERS if encoders are installed.
-        */
+        // Set all motors to run without encoders.
+        // May want to use RUN_USING_ENCODERS if encoders are installed.
         FL_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FR_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BL_drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -127,9 +125,10 @@ public class HardwareK9bot
 
         //the below lines set up the configuration file
         ballSensor = hwMap.i2cDevice.get("ballSensor");
-        RANGE1 = hwMap.i2cDevice.get("RANGE1");
+
 
         //colorA= hwMap.get(I2cSensor.class, "ca");
+        //colorC = hwMap.get(I2cSensor.class, "cc");
         Left.setPosition(LEFT_HOME);
         Right.setPosition(RIGHT_HOME);
         BallArm.setPosition(BALL_ARM_UP);
