@@ -362,7 +362,7 @@ public class MRI_Color_Sensors extends OpMode
 
     } // Initializes the hardware variables.
 
-    public void knockBall (String color, double degreesPer10thSecond)
+    public void knockBall (String color)
     {
         String ballColor;
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
@@ -383,15 +383,15 @@ public class MRI_Color_Sensors extends OpMode
 
         if (color == ballColor)
         {
-            smoothMovePower("rightTurn", .25, 50 / degreesPer10thSecond);
+            smoothMovePower("rightTurn", .25, 0.1);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("leftTurn", .25, 50 / degreesPer10thSecond);
+            smoothMovePower("leftTurn", .25, 0.1);
         }
         else
         {
-            smoothMovePower("leftTurn", .25, 50 / degreesPer10thSecond);
+            smoothMovePower("leftTurn", .25, 0.1);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("rightTurn", .25, 50 / degreesPer10thSecond);
+            smoothMovePower("rightTurn", .25, 0.1);
         }
     }
 
@@ -542,7 +542,7 @@ public class MRI_Color_Sensors extends OpMode
             ballPosition -= 0.01;
 
         if (gamepad2.right_trigger > 70)
-            knockBall("red", degreesPer10thSecond);
+            knockBall("red");
 
         robot.FL_drive.setPower(frontLeft);
         robot.FR_drive.setPower(frontRight);
