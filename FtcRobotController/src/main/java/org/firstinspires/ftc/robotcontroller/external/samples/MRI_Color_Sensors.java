@@ -29,7 +29,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 
-@TeleOp(name = "Testing December 28th", group = "K9bot")
+@TeleOp(name = "Testing December 30th", group = "K9bot")
 //@Autonomous(...) is the other common choice
 //@Disabled
 public class MRI_Color_Sensors extends OpMode
@@ -82,7 +82,7 @@ public class MRI_Color_Sensors extends OpMode
     int xVal, yVal, zVal;  // Momentary rate of rotation in three axis
     int temp, temp1;
     double temp2;
-    double degreesPer10thSecond;
+    double degreesPer10thSecond = 0;
 
     GyroSensor sensorGyro;  // General Gyro Sensor allows us to point to the sensor in the configuration file.
     ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
@@ -250,9 +250,17 @@ public class MRI_Color_Sensors extends OpMode
     }
 
     // Turns a number of degrees compared to where the robot is. Positive numbers turn left.
-    public void changeAngle(int degreesFromCurrentAngle, double degreesPer10thSecond) throws InterruptedException
+    public void changeAngle(int degreesFromCurrentAngle, double degreesPer10thSecond)
     {
-        turnAbsolute(degreesFromCurrentAngle + mrGyro.getHeading());
+        if (degreesFromCurrentAngle < 0)
+        {
+            degreesFromCurrentAngle = Math.abs(degreesFromCurrentAngle);
+            movePower("leftTurn", 0.25, 10 * degreesFromCurrentAngle / degreesPer10thSecond);
+        }
+        else
+        {
+            movePower("rightTurn", 0.25, 10 * degreesFromCurrentAngle / degreesPer10thSecond);
+        }
     }
 
     // Turns a number of degrees compared to where the robot was when the program started. Positive numbers turn left.
@@ -362,7 +370,7 @@ public class MRI_Color_Sensors extends OpMode
 
     } // Initializes the hardware variables.
 
-    public void knockBall (String color)
+    public void knockBall (String team)
     {
         String ballColor;
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
@@ -381,7 +389,7 @@ public class MRI_Color_Sensors extends OpMode
                 ballColor = "blue";
         }
 
-        if (color == ballColor)
+        if (team == ballColor)
         {
             smoothMovePower("rightTurn", .25, 0.1);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
@@ -544,6 +552,9 @@ public class MRI_Color_Sensors extends OpMode
         if (gamepad2.right_trigger > 70)
             knockBall("red");
 
+        if (gamepad2.left_trigger > 70)
+            changeAngle(5, degreesPer10thSecond);
+
         robot.FL_drive.setPower(frontLeft);
         robot.FR_drive.setPower(frontRight);
         robot.BL_drive.setPower(backLeft);
@@ -577,7 +588,7 @@ public class MRI_Color_Sensors extends OpMode
         // Display values
         telemetry.addData("1 #A", ballSensorcache[0] & 0xFF);
 
-        telemetry.addData("3 A", ballSensorreader.getI2cAddress().get8Bit());
+        telemetry.addData("2 A", ballSensorreader.getI2cAddress().get8Bit());
 
         telemetry.addData("1. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
         telemetry.addData("2. target", String.format("%03d", target));
