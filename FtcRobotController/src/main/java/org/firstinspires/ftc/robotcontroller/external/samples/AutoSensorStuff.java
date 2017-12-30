@@ -381,6 +381,8 @@ public class AutoSensorStuff extends OpMode {
         RANGE1Reader.engage();
 
 
+
+
         telemetry.addData("Say", "Hello Driver");    //
         telemetry.update();
 
@@ -419,9 +421,6 @@ public class AutoSensorStuff extends OpMode {
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
      */
-
-
-
 
     //Make the sensors actually sensor
 
@@ -462,9 +461,6 @@ public class AutoSensorStuff extends OpMode {
         }
 
 
-
-
-
     public void correctXAxis(boolean frontSensorDetected) {
 
             boolean detected = frontSensorDetected;
@@ -482,8 +478,8 @@ public class AutoSensorStuff extends OpMode {
 
     public void correctYAxis(double length) {
         //Use distace to wall to correct the Y axis
-        boolean distanceSet = false;
-        while (distanceSet /*sensor lengthn > length*/) {
+
+        while (length < range1Cache[0]) {
             smoothMovePowerinstant("forward", 1.0);
         }
 
