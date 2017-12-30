@@ -327,8 +327,17 @@ public class MRI_Color_Sensors extends OpMode
                 telemetry.addData("heading", String.format("%03d", heading));
                 telemetry.update();
             }
-            stop();
         }
+        stop();
+        movePower("forward", 0, 0.25);
+        stop();
+        heading = cleanUp(360 - mrGyro.getHeading());  //Set variable to gyro reading
+        int degreesError = heading - target; // If positive left, if negative right
+        if (degreesError > 0)
+            movePower("leftTurn", 1, degreesError / 90);
+        else
+            movePower("rightTurn", 1, Math.abs(degreesError) / 90);
+        stop();
     }
 
     public void knockBall (String team)
@@ -352,7 +361,7 @@ public class MRI_Color_Sensors extends OpMode
                 break;
         }
 
-        movePower("forward", 0, 1);
+        movePower("forward", 0, 0.25);
 
         if (team == ballColor)
         {
@@ -386,6 +395,7 @@ public class MRI_Color_Sensors extends OpMode
         return input;
     }
 
+    // Aligns robot with the cipher boxes by scrolling from right to left.
     public void correctXAxisBackWall()
     {
         turnAbsolute(180);
@@ -414,7 +424,8 @@ public class MRI_Color_Sensors extends OpMode
         stop();
     }
 
-    public void correctYAxisBackWall() // Moves robot close enough to back wall to begin correctXAxis
+    // Moves robot close enough to back wall to begin correctXAxis.
+    public void correctYAxisBackWall()
     {
         int counter = 0;
         turnAbsolute(180);
@@ -596,8 +607,10 @@ public class MRI_Color_Sensors extends OpMode
             correctXAxisBackWall();
         if (gamepad1.dpad_left)
             knockBall("red");
-        if (gamepad1.dpad_right)
+        if (gamepad1.dpad_right) {
             correctYAxisBackWall();
+            correctXAxisBackWall();
+        }
 
         if (gamepad2.a)
             liftSpeed = 1;
@@ -628,8 +641,6 @@ public class MRI_Color_Sensors extends OpMode
             ballPosition -= 0.01;
         if (gamepad2.dpad_left)
             knockBall("red");
-        if (gamepad2.dpad_right)
-            changeAngle(5, degreesPer10thSecond);
 
         robot.FL_drive.setPower(frontLeft);
         robot.FR_drive.setPower(frontRight);
