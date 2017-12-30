@@ -80,6 +80,7 @@ public class HardwareK9bot
     public final static double BALL_ARM_DOWN = .90;
     public final static double FRONT_OUT = .98;
     public final static double FRONT_IN = .0;
+
     /* Local OpMode members. */
     HardwareMap hwMap  = null;
     private ElapsedTime period  = new ElapsedTime();
@@ -135,4 +136,3 @@ public class HardwareK9bot
         FrontBoi.setPosition(FRONT_IN);
     }
 }
-
