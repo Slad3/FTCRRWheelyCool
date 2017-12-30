@@ -75,8 +75,8 @@ public class HardwareK9bot
 
     public final static double LEFT_GRAB = 0.68;
     public final static double RIGHT_GRAB = 0.40;
-    public final static double LEFT_RELEASE = 0.62;
-    public final static double RIGHT_RELEASE = 0.46;
+    public final static double LEFT_RELEASE  = 0.62;
+    public final static double RIGHT_RELEASE  = 0.46;
     public final static double LEFT_MIN_RANGE  = 0.29;
     public final static double LEFT_MAX_RANGE  = 1.00; // Use as home.
     public final static double RIGHT_MIN_RANGE  = 0.05; // Use as home.

@@ -455,7 +455,21 @@ public class MRI_Color_Sensors extends OpMode
     {
         correctYAxisBackWall();
         correctXAxisBackWall();
-        //correctZAxis();
+    }
+
+    public void release()
+    {
+        // Let go of both servos
+        leftPosition = robot.LEFT_RELEASE; // Slightly offset from straight out
+        rightPosition = robot.RIGHT_RELEASE; // Slightly offset from straight out
+        leftPosition  = Range.clip(leftPosition, robot.LEFT_MIN_RANGE, robot.LEFT_MAX_RANGE);
+        robot.Left.setPosition(leftPosition);
+        rightPosition = Range.clip(rightPosition, robot.RIGHT_MIN_RANGE, robot.RIGHT_MAX_RANGE);
+        robot.Right.setPosition(rightPosition);
+
+        // Raise lift above the block to prevent tipping
+        movePower("lift", 1, 0.5);
+        movePower("backwards", 0.5, 0.5);
     }
 
     // Code to run ONCE when the driver hits INIT
@@ -561,7 +575,7 @@ public class MRI_Color_Sensors extends OpMode
         frontRight = ( gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Front left
         backLeft   = (-gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Back right
         backRight  = (-gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Back left
-        Lift = gamepad2.left_stick_y * liftSpeed;
+        Lift = -gamepad2.left_stick_y * liftSpeed;
 
         // The below two if() statements ensure that the mode of the color sensor is changed only once each time the touch sensor is pressed.
         // The mode of the color sensor is saved to the sensor's long term memory. Just like flash drives, the long term memory has a life time in the 10s or 100s of thousands of cycles.
@@ -615,8 +629,10 @@ public class MRI_Color_Sensors extends OpMode
             correctXAxisBackWall();
         if (gamepad1.dpad_left)
             knockBall("red");
-        if (gamepad1.dpad_right) {
+        if (gamepad1.dpad_right)
+        {
             orient();
+            release();
         }
 
         if (gamepad2.a)
