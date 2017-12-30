@@ -27,6 +27,7 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 
 @TeleOp(name = "Testing December 30th", group = "K9bot")
@@ -70,13 +71,22 @@ public class MRI_Color_Sensors extends OpMode
     I2cDevice RANGE1;
     I2cDeviceSynch RANGE1Reader;
 
-    boolean buttonState = false;  // Tracks the last known state of the touch sensor
+    OpticalDistanceSensor ods1;
+
+    double odsReadingRaw;
+    static double odsReadingLinear;
+
+    //sensor value between 0 and 1023
+    int raw1;
+    int state = 0;
+    int count = 0;
+
+    boolean buttonState = false;  // Tracks the last known state of the gamepad 1 x button
     boolean LEDState = true;     // Tracks the mode of the color sensor; Active = true, Passive = false
 
     //int zAccumulated;  // Total rotation left/right
     int heading;       // Heading left/right. Integer between 0 and 359
     int target = 0;  // Desired angle to turn to
-    int xVal, yVal, zVal;  // Momentary rate of rotation in three axis
     int temp, temp1;
     double temp2;
     double degreesPer10thSecond = 0;
@@ -259,6 +269,7 @@ public class MRI_Color_Sensors extends OpMode
         {
             movePower("rightTurn", 0.25, degreesFromCurrentAngle / degreesPerSecond);
         }
+        stop();
     }
 
     // Turns a number of degrees compared to where the robot was when the program started. Positive numbers turn left.
@@ -269,11 +280,9 @@ public class MRI_Color_Sensors extends OpMode
         {
             while (Math.abs(heading - target) > 180)
             {  //Continue while the robot direction is further than 180 degrees from the target
-                if (Math.abs(heading - target) > 350)
-                    break;
                 if (heading < target)
                     smoothMovePower("leftTurn", 1, 0.5);
-                if (heading > target)
+                else if (heading > target)
                     smoothMovePower("rightTurn", 1, 0.5);
                 heading = cleanUp(360 - mrGyro.getHeading());  //Set variable to gyro reading
                 telemetry.addData("heading", String.format("%03d", heading));
@@ -282,11 +291,11 @@ public class MRI_Color_Sensors extends OpMode
 
             while (Math.abs(heading - target) > 90)
             {  //Continue while the robot direction is further than 90 degrees from the target
-                if (Math.abs(heading - target) > 350)
+                if (Math.abs(heading - target) > 270)
                     break;
                 if (heading > target)
                     smoothMovePower("leftTurn", 1, 0.5);
-                if (heading < target)
+                else if (heading < target)
                     smoothMovePower("rightTurn", 1, 0.5);
                 heading = cleanUp(360 - mrGyro.getHeading());  //Set variable to gyro reading
                 telemetry.addData("heading", String.format("%03d", heading));
@@ -295,11 +304,11 @@ public class MRI_Color_Sensors extends OpMode
 
             while (Math.abs(heading - target) > 45)
             {  //Continue while the robot direction is further than 45 degrees from the target
-                if (Math.abs(heading - target) > 350)
+                if (Math.abs(heading - target) > 315)
                     break;
                 if (heading > target)
                     smoothMovePower("leftTurn", 1, 0.25);
-                if (heading < target)
+                else if (heading < target)
                     smoothMovePower("rightTurn", 1, 0.25);
                 heading = cleanUp(360 - mrGyro.getHeading());  //Set variable to gyro reading
                 telemetry.addData("heading", String.format("%03d", heading));
@@ -312,13 +321,12 @@ public class MRI_Color_Sensors extends OpMode
                     break;
                 if (heading > target)
                     movePower("leftTurn", 0.25, 0.25);
-                if (heading < target)
+                else if (heading < target)
                     movePower("rightTurn", 0.25, 0.25);
                 heading = cleanUp(360 - mrGyro.getHeading());  //Set variable to gyro reading
                 telemetry.addData("heading", String.format("%03d", heading));
                 telemetry.update();
             }
-
             stop();
         }
     }
@@ -378,32 +386,57 @@ public class MRI_Color_Sensors extends OpMode
         return input;
     }
 
-    public void correctXAxis()
+    public void correctXAxisBackWall()
     {
+        turnAbsolute(180);
         double startTime = getRuntime();
         double time = getRuntime();
+        int counter = 0;
         while (time - startTime < 2.0)
         {
+            if (counter % 10 == 0)
+                turnAbsolute(180);
             range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
-            if (range1Cache[0] < 17 * 2.54)
+            if (range1Cache[0] < 10 * 2.54)
             {
                 stop();
                 movePower("right", 0.5, 0.01); // Find this number
                 stop();
                 return;
             }
-
             smoothMovePower("left", 1, 0.075);
             time = getRuntime();
+            telemetry.addData("Heading", String.format("%03d", heading));
+            telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
+            telemetry.addData("Counter", counter);
+            counter++;
         }
         stop();
     }
 
-    public void correctYAxis()
+    public void correctYAxisBackWall() // Moves robot close enough to back wall to begin correctXAxis
     {
+        int counter = 0;
+        turnAbsolute(180);
+        movePower("backward", 1, 0.5);
+        stop();
         while (true)
-
-        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+        {
+            if (counter % 10 == 0)
+                turnAbsolute(180);
+            range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+            if (range1Cache[0] < 17 * 2.54)
+            {
+                stop();
+                turnAbsolute(180);
+                return;
+            }
+            smoothMovePower("forward", 0.5, 0.05);
+            telemetry.addData("Heading", String.format("%03d", heading));
+            telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
+            telemetry.addData("Counter", counter);
+            counter++;
+        }
     }
 
     // Code to run ONCE when the driver hits INIT
@@ -434,6 +467,8 @@ public class MRI_Color_Sensors extends OpMode
         RANGE1 = hardwareMap.i2cDevice.get("RANGE1");
         RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
         RANGE1Reader.engage();
+
+        ods1 = hardwareMap.opticalDistanceSensor.get("ods1");
 
         telemetry.addData("Say", "Hello Driver");    //
         telemetry.update();
@@ -478,12 +513,10 @@ public class MRI_Color_Sensors extends OpMode
 
         // zAccumulated = mrGyro.getIntegratedZValue();  // Set variables to gyro readings
 
+        odsReadingRaw = ods1.getRawLightDetected();
+
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         heading = cleanUp(heading);
-
-        xVal = mrGyro.rawX() / 128;  // Lowest 7 bits are noise
-        yVal = mrGyro.rawY() / 128;
-        zVal = mrGyro.rawZ() / 128;
 
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);;
 
@@ -545,20 +578,26 @@ public class MRI_Color_Sensors extends OpMode
         if (gamepad1.y)
             turnAbsolute(target);
 
-        driveSpeed = 1;
+        // drivespeed stuff
+        //driveSpeed = 1;
+        //if (gamepad1.right_bumper)
+        //    driveSpeed = 0.5;
+        //if (gamepad1.left_bumper)
+        //    driveSpeed = 0.25;
+
         if (gamepad1.right_bumper)
-            driveSpeed = 0.5;
-        if (gamepad1.left_bumper)
-            driveSpeed = 0.25;
+            frontPosition = robot.FRONT_OUT;
+        else if (gamepad1.left_bumper)
+            frontPosition = robot.FRONT_IN;
 
         if (gamepad1.dpad_up)
             movePower("forward", 1, 0.5);
         if (gamepad1.dpad_down)
-            correctXAxis();
+            correctXAxisBackWall();
         if (gamepad1.dpad_left)
             knockBall("red");
         if (gamepad1.dpad_right)
-            changeAngle(5,  degreesPer10thSecond);
+            correctYAxisBackWall();
 
         if (gamepad2.a)
             liftSpeed = 1;
@@ -623,20 +662,19 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
 
         // Display values
-        telemetry.addData("1 #A", colorAcache[0] & 0xFF);
-        telemetry.addData("2 #C", colorCcache[0] & 0xFF);
+        telemetry.addData("1. #A", colorAcache[0] & 0xFF);
+        telemetry.addData("2. #C", colorCcache[0] & 0xFF);
 
-        telemetry.addData("3 A", colorAreader.getI2cAddress().get8Bit());
-        telemetry.addData("4 C", colorCreader.getI2cAddress().get8Bit());
+        telemetry.addData("3. A", colorAreader.getI2cAddress().get8Bit());
+        telemetry.addData("4. C", colorCreader.getI2cAddress().get8Bit());
 
-        telemetry.addData("1. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
-        telemetry.addData("2. target", String.format("%03d", target));
-        telemetry.addData("3. X", String.format("%03d", xVal));
-        telemetry.addData("4. Y", String.format("%03d", yVal));
-        telemetry.addData("5. Z", String.format("%03d", zVal));
+        telemetry.addData("5. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
+        telemetry.addData("6. target", String.format("%03d", target));
 
-        telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
-        telemetry.addData("ODS", range1Cache[1] & 0xFF);
+        telemetry.addData("7. ODS Raw", odsReadingRaw);
+
+        telemetry.addData("8. Ultra Sonic", range1Cache[0] & 0xFF);
+        telemetry.addData("9. range ODS", range1Cache[1] & 0xFF);
 
         telemetry.update(); // Limited to 100x per second
     }

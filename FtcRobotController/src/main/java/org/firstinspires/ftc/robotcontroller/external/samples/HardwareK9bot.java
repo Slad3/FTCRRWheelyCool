@@ -32,6 +32,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.I2cSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -68,7 +69,9 @@ public class HardwareK9bot
     public Servo    BallArm     = null;
     public Servo    FrontBoi     = null;
     public I2cDevice colorA = null;
+    public I2cDevice colorC = null;
     public I2cDevice RANGE1 = null;
+    public OpticalDistanceSensor ods1 = null;
 
     public final static double LEFT_GRAB = 0.68;
     public final static double RIGHT_GRAB = 0.40;
@@ -130,9 +133,8 @@ public class HardwareK9bot
 
         //the below lines set up the configuration file
         colorA = hwMap.i2cDevice.get("colorA");
+        colorC = hwMap.i2cDevice.get("colorC");
 
-        //colorA= hwMap.get(I2cSensor.class, "ca");
-        //colorC = hwMap.get(I2cSensor.class, "cc");
         Left.setPosition(LEFT_MAX_RANGE);
         Right.setPosition(RIGHT_MIN_RANGE);
         BallArm.setPosition(BALL_ARM_UP);
