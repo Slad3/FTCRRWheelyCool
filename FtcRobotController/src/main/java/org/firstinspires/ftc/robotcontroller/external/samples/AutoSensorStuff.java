@@ -42,16 +42,10 @@ public class AutoSensorStuff extends OpMode {
 
     /* Declare OpMode members. */
     HardwareK9bot robot = new HardwareK9bot();
-    double leftPosition = robot.LEFT_HOME;                  // Servo safe position
-    double rightPosition = robot.RIGHT_HOME;                 // Servo safe position
+    double leftPosition = robot.LEFT_MAX_RANGE;                  // Servo safe position
+    double rightPosition = robot.RIGHT_MIN_RANGE;                 // Servo safe position
     double liftSpeed = 1;
     double driveSpeed = 1;
-    final double    LEFT_HOME        =   robot.LEFT_HOME;
-    final double    RIGHT_HOME       =   robot.RIGHT_HOME;
-    final double    LEFT_MAX_RANGE   =   robot.LEFT_MAX_RANGE;
-    final double LEFT_MIN_RANGE = robot.LEFT_MIN_RANGE;
-    final double RIGHT_MAX_RANGE = robot.RIGHT_MAX_RANGE;
-    //final double    RIGHT_MIN_RANGE  =   robot.RIGHT_MIN_RANGE;
     final double LEFT_SPEED = 0.03;                            // sets rate to move servo
     final double RIGHT_SPEED = 0.03;
     final double BALL_ARM_DOWN = robot.BALL_ARM_DOWN;
@@ -68,9 +62,6 @@ public class AutoSensorStuff extends OpMode {
     boolean Cdetects;
     double increment = .1;
 
-
-
-
     byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
 
     I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); //Default I2C address for MR Range (7-bit)
@@ -79,10 +70,6 @@ public class AutoSensorStuff extends OpMode {
 
     public I2cDevice RANGE1;
     public I2cDeviceSynch RANGE1Reader;
-
-
-
-
 
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
@@ -460,7 +447,6 @@ public class AutoSensorStuff extends OpMode {
 
         }
 
-
     public void correctXAxis(boolean frontSensorDetected) {
 
             boolean detected = frontSensorDetected;
@@ -519,7 +505,7 @@ public class AutoSensorStuff extends OpMode {
     public void orient() {
         //Compares current orientations to preset orientation
 
-        //correctYaw(presetYaw);
+        //..gri
 
         //correctXAxis();
 
@@ -578,28 +564,32 @@ public class AutoSensorStuff extends OpMode {
         xVal = mrGyro.rawX() / 128;  //Lowest 7 bits are noise
         yVal = mrGyro.rawY() / 128;
         zVal = mrGyro.rawZ() / 128;
+        // The below two if() statements ensure that the mode of the color sensor is changed only once each time the touch sensor is pressed.
+        // The mode of the color sensor is saved to the sensor's long term memory. Just like flash drives, the long term memory has a life time in the 10s or 100s of thousands of cycles.
+        // This seems like a lot but if your program wrote to the long term memory every time though the main loop, it would shorten the life of your sensor.
+            if (!buttonState && gamepad1.x)  // If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
+            {
+                buttonState = true;                   // Change touch state to true because the touch sensor is now pressed
+                LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
+                if (LEDState)
+                {
+                    ballSensorreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+                }
+                else
+                {
+                    ballSensorreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+                }
+            }
 
-        //The below two if() statements ensure that the mode of the color sensor is changed only once each time the touch sensor is pressed.
-        //The mode of the color sensor is saved to the sensor's long term memory. Just like flash drives, the long term memory has a life time in the 10s or 100s of thousands of cycles.
-        //This seems like a lot but if your program wrote to the long term memory every time though the main loop, it would shorten the life of your sensor.
+            if (!gamepad1.x)                        // If the touch sensor is now pressed
+                buttonState = false;                // Set the buttonState to false to indicate that the touch sensor was released
 
-         //If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
-                ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-              //Set the mode of the color sensor using LEDState
-
-
-
-        ballSensorcache = ballSensorreader.read(0x04, 1);
-
-
-
+            ballSensorcache = ballSensorreader.read(0x04, 1);
 
         if (gamepad2.a)
             liftSpeed = 1;
         if (gamepad2.b)
             liftSpeed = 0.5;
-
-
 
         if (gamepad2.a)
             movePower("left", 0.5, 0.5);
@@ -631,13 +621,13 @@ public class AutoSensorStuff extends OpMode {
         if (gamepad2.left_bumper)
             leftPosition += LEFT_SPEED;
         else if (gamepad2.y)
-            leftPosition = LEFT_MIN_RANGE;
+            leftPosition = robot.LEFT_MIN_RANGE;
 
         // Right servo going in means less
         if (gamepad2.right_bumper)
             rightPosition -= RIGHT_SPEED;
         else if (gamepad2.y)
-            rightPosition = RIGHT_MAX_RANGE;
+            rightPosition = robot.RIGHT_MAX_RANGE;
 
         if (gamepad2.x){
             rightPosition = 0.96;
@@ -657,8 +647,6 @@ public class AutoSensorStuff extends OpMode {
 
         if (gamepad1.b)
             stop();
-
-
 
         if (gamepad1.dpad_up)
 
@@ -691,9 +679,7 @@ public class AutoSensorStuff extends OpMode {
         //display values
         telemetry.addData("1 #A", ballSensorcache[0] & 0xFF);
 
-        telemetry.addData("3 A", ballSensorreader.getI2cAddress().
-
-                get8Bit());
+        telemetry.addData("3 A", ballSensorreader.getI2cAddress().get8Bit());
 
         telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
         telemetry.addData("ODS", range1Cache[1] & 0xFF);
@@ -707,15 +693,3 @@ public class AutoSensorStuff extends OpMode {
 
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-

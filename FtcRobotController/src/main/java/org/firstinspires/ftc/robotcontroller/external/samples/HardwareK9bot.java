@@ -70,14 +70,18 @@ public class HardwareK9bot
     public I2cDevice ballSensor = null;
     public I2cDevice RANGE1 = null;
 
-    public final static double LEFT_HOME = 0.57;
-    public final static double RIGHT_HOME = 0.27;
-    public final static double LEFT_MIN_RANGE  = 0.05;
-    public final static double LEFT_MAX_RANGE  = 0.85;
-    public final static double RIGHT_MIN_RANGE  = 0.05;
-    public final static double RIGHT_MAX_RANGE  = 0.85;
+    public final static double LEFT_GRAB = 0.68;
+    public final static double RIGHT_GRAB = 0.40;
+    public final static double LEFT_RELEASE = 0.62;
+    public final static double RIGHT_RELEASE = 0.46;
+    public final static double LEFT_MIN_RANGE  = 0.29;
+    public final static double LEFT_MAX_RANGE  = 1.00; // Use as home.
+    public final static double RIGHT_MIN_RANGE  = 0.05; // Use as home.
+    public final static double LEFT_HOME  = 1.00;
+    public final static double RIGHT_HOME  = 0.05;
+    public final static double RIGHT_MAX_RANGE  = 0.70;
     public final static double BALL_ARM_UP = .00;
-    public final static double BALL_ARM_DOWN = .90;
+    public final static double BALL_ARM_DOWN = 1;
     public final static double FRONT_OUT = .98;
     public final static double FRONT_IN = .0;
 
@@ -129,8 +133,8 @@ public class HardwareK9bot
 
         //colorA= hwMap.get(I2cSensor.class, "ca");
         //colorC = hwMap.get(I2cSensor.class, "cc");
-        Left.setPosition(LEFT_HOME);
-        Right.setPosition(RIGHT_HOME);
+        Left.setPosition(LEFT_MAX_RANGE);
+        Right.setPosition(RIGHT_MIN_RANGE);
         BallArm.setPosition(BALL_ARM_UP);
         FrontBoi.setPosition(FRONT_IN);
     }

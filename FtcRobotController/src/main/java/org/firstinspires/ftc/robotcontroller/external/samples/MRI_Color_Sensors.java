@@ -37,18 +37,12 @@ public class MRI_Color_Sensors extends OpMode
 
     /* Declare OpMode members. */
     HardwareK9bot   robot            =   new HardwareK9bot();
-    double          leftPosition     =   robot.LEFT_HOME;                  // Servo safe position
-    double          rightPosition    =   robot.RIGHT_HOME;                 // Servo safe position
+    double          leftPosition     =   robot.LEFT_MAX_RANGE;                  // Servo safe position
+    double          rightPosition    =   robot.RIGHT_MIN_RANGE;                 // Servo safe position
     double          ballPosition     =   robot.BALL_ARM_UP;
     double          frontPosition     =  robot.FRONT_IN;
     double          liftSpeed        =   1;
     double          driveSpeed       =   1;
-    //final double    LEFT_HOME        =   robot.LEFT_HOME;
-    //final double    RIGHT_HOME       =   robot.RIGHT_HOME;
-    //final double    LEFT_MAX_RANGE   =   robot.LEFT_MAX_RANGE;
-    final double    LEFT_MIN_RANGE   =   robot.LEFT_MIN_RANGE;
-    final double    RIGHT_MAX_RANGE  =   robot.RIGHT_MAX_RANGE;
-    //final double    RIGHT_MIN_RANGE  =   robot.RIGHT_MIN_RANGE;
     final double    LEFT_SPEED       =   0.03;                            // Sets rate to move servo
     final double    RIGHT_SPEED      =   0.03;
 
@@ -83,6 +77,7 @@ public class MRI_Color_Sensors extends OpMode
     int temp, temp1;
     double temp2;
     double degreesPer10thSecond = 0;
+    double degreesPerSecond = 0;
 
     GyroSensor sensorGyro;  // General Gyro Sensor allows us to point to the sensor in the configuration file.
     ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
@@ -255,11 +250,11 @@ public class MRI_Color_Sensors extends OpMode
         if (degreesFromCurrentAngle < 0)
         {
             degreesFromCurrentAngle = Math.abs(degreesFromCurrentAngle);
-            movePower("leftTurn", 0.25, 10 * degreesFromCurrentAngle / degreesPer10thSecond);
+            movePower("leftTurn", 0.25, degreesFromCurrentAngle / degreesPerSecond);
         }
         else
         {
-            movePower("rightTurn", 0.25, 10 * degreesFromCurrentAngle / degreesPer10thSecond);
+            movePower("rightTurn", 0.25, degreesFromCurrentAngle / degreesPerSecond);
         }
     }
 
@@ -325,6 +320,51 @@ public class MRI_Color_Sensors extends OpMode
         }
     }
 
+    public void knockBall (String team)
+    {
+        double timeStart = getRuntime();
+        String ballColor;
+        robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
+
+        movePower("forward", 0, 0.5);
+
+        switch(ballSensorcache[0])
+        {
+            case 10:
+                ballColor = "red";
+                break;
+
+            case 3:
+                ballColor = "blue";
+                break;
+
+            default:
+                ballColor = "none";
+        }
+
+        movePower("forward", 0, 0.5);
+
+        if (team == ballColor)
+        {
+            smoothMovePower("rightTurn", .25, 0.1);
+            robot.BallArm.setPosition(robot.BALL_ARM_UP);
+            smoothMovePower("leftTurn", .25, 0.1);
+        }
+        else if (ballColor == "none")
+        {
+            stop();
+            robot.BallArm.setPosition(robot.BALL_ARM_UP);
+            return;
+        }
+        else
+        {
+            smoothMovePower("leftTurn", .25, 0.1);
+            robot.BallArm.setPosition(robot.BALL_ARM_UP);
+            smoothMovePower("rightTurn", .25, 0.1);
+        }
+        stop();
+    }
+
     // Fixes any headings passed into it into the range of 0 - 360.
     public int cleanUp(int input)
     {
@@ -335,6 +375,34 @@ public class MRI_Color_Sensors extends OpMode
         if (input > 360)
             return (input - 360);
         return input;
+    }
+
+    public void correctXAxis()
+    {
+        double startTime = getRuntime();
+        double time = getRuntime();
+        while (time - startTime < 2.0)
+        {
+            range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+            if (range1Cache[0] < 17 * 2.54)
+            {
+                stop();
+                movePower("right", 0.5, 0.01); // Find this number
+                stop();
+                return;
+            }
+
+            smoothMovePower("left", 1, 0.075);
+            time = getRuntime();
+        }
+        stop();
+    }
+
+    public void correctYAxis()
+    {
+        while (true)
+
+        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
     }
 
     /*
@@ -369,39 +437,6 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.update();
 
     } // Initializes the hardware variables.
-
-    public void knockBall (String team)
-    {
-        String ballColor;
-        robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
-
-        switch(ballSensorcache[0])
-        {
-            case 10:
-                ballColor = "red";
-                break;
-
-            case 3:
-                ballColor = "blue";
-                break;
-
-            default:
-                ballColor = "blue";
-        }
-
-        if (team == ballColor)
-        {
-            smoothMovePower("rightTurn", .25, 0.1);
-            robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("leftTurn", .25, 0.1);
-        }
-        else
-        {
-            smoothMovePower("leftTurn", .25, 0.1);
-            robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("rightTurn", .25, 0.1);
-        }
-    }
 
     @Override
     public void init_loop()
@@ -450,10 +485,9 @@ public class MRI_Color_Sensors extends OpMode
         yVal = mrGyro.rawY() / 128;
         zVal = mrGyro.rawZ() / 128;
 
-        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);;
 
-        ballSensorcache = ballSensorreader.read(0x04, 1);
-
+        firstCycle = false;
         if (firstCycle) // This section finds the turning speed of the robot.
         {
             ballPosition = robot.BALL_ARM_UP;
@@ -466,6 +500,7 @@ public class MRI_Color_Sensors extends OpMode
                 temp1 += 360;
             temp2 = (double) (temp1 - temp);
             degreesPer10thSecond = temp2 / 10.0; // Saves variable for rest of program.
+            degreesPerSecond = temp2;
             firstCycle = false;
         }
 
@@ -496,6 +531,8 @@ public class MRI_Color_Sensors extends OpMode
         if (!gamepad1.x)                        // If the touch sensor is now pressed
             buttonState = false;                // Set the buttonState to false to indicate that the touch sensor was released
 
+        ballSensorcache = ballSensorreader.read(0x04, 1);
+
         if (gamepad1.a)
             target = target + 15;
         if (gamepad1.b)
@@ -514,11 +551,11 @@ public class MRI_Color_Sensors extends OpMode
         if (gamepad1.dpad_up)
             movePower("forward", 1, 0.5);
         if (gamepad1.dpad_down)
-            movePower("backward", 1, 0.5);
+            correctXAxis();
         if (gamepad1.dpad_left)
-            movePower("leftTurn", 1, 0.5);
+            knockBall("red");
         if (gamepad1.dpad_right)
-            movePower("rightTurn", 1, 0.5);
+            changeAngle(5,  degreesPer10thSecond);
 
         if (gamepad2.a)
             liftSpeed = 1;
@@ -535,24 +572,21 @@ public class MRI_Color_Sensors extends OpMode
         if (gamepad2.left_bumper)
             leftPosition += LEFT_SPEED;
         else if (gamepad2.y)
-            leftPosition = LEFT_MIN_RANGE;
+            leftPosition = robot.LEFT_MIN_RANGE;
 
         // Right servo going in means less
         if (gamepad2.right_bumper)
             rightPosition -= RIGHT_SPEED;
         else if (gamepad2.y)
-            rightPosition = RIGHT_MAX_RANGE;
+            rightPosition = robot.RIGHT_MAX_RANGE;
 
         if (gamepad2.dpad_up)
             ballPosition += 0.01;
-
         if (gamepad2.dpad_down)
             ballPosition -= 0.01;
-
-        if (gamepad2.right_trigger > 70)
+        if (gamepad2.dpad_left)
             knockBall("red");
-
-        if (gamepad2.left_trigger > 70)
+        if (gamepad2.dpad_right)
             changeAngle(5, degreesPer10thSecond);
 
         robot.FL_drive.setPower(frontLeft);
@@ -586,7 +620,7 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
 
         // Display values
-        telemetry.addData("1 #A", ballSensorcache[0] & 0xFF);
+        telemetry.addData("1 #A", ballSensorcache[0]);
 
         telemetry.addData("2 A", ballSensorreader.getI2cAddress().get8Bit());
 
