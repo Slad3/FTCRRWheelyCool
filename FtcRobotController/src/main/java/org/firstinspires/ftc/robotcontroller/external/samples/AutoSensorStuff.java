@@ -74,10 +74,10 @@ public class AutoSensorStuff extends OpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
 
-    byte[] ballSensorcache;
+    byte[] colorAcache;
 
-    I2cDevice ballSensor;
-    I2cDeviceSynch ballSensorreader;
+    I2cDevice colorA;
+    I2cDeviceSynch colorAreader;
 
     //TouchSensor touch;         //Instance of TouchSensor - for changing color sensor mode
 
@@ -355,9 +355,9 @@ public class AutoSensorStuff extends OpMode {
         telemetry.addData("Status", "Initialized");
 
 
-        ballSensorreader = new I2cDeviceSynchImpl(ballSensor, I2cAddr.create8bit(0x3a), false);
+        colorAreader = new I2cDeviceSynchImpl(colorA, I2cAddr.create8bit(0x3a), false);
 
-        ballSensorreader.engage();
+        colorAreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  //Point to the gyro in the configuration file
         mrGyro = (ModernRoboticsI2cGyro) sensorGyro;      //ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
@@ -393,16 +393,16 @@ public class AutoSensorStuff extends OpMode {
         }
 
         if (LEDState) {
-            ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+            colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
 
         } else {
-            ballSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+            colorAreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
 
         }
         //Active - For measuring reflected light. Cancels out ambient light
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
 
-        ballSensorcache = ballSensorreader.read(0x04, 1);
+        colorAcache = colorAreader.read(0x04, 1);
     }
 
     /*
@@ -418,7 +418,7 @@ public class AutoSensorStuff extends OpMode {
 
         robot.BallArm.setPosition(BALL_ARM_DOWN);
 
-            switch(ballSensorcache[0]){
+            switch(colorAcache[0]){
 
                 case 10:
                     ballColor = "red";
@@ -573,18 +573,18 @@ public class AutoSensorStuff extends OpMode {
                 LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
                 if (LEDState)
                 {
-                    ballSensorreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+                    colorAreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
                 }
                 else
                 {
-                    ballSensorreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+                    colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
                 }
             }
 
             if (!gamepad1.x)                        // If the touch sensor is now pressed
                 buttonState = false;                // Set the buttonState to false to indicate that the touch sensor was released
 
-            ballSensorcache = ballSensorreader.read(0x04, 1);
+            colorAcache = colorAreader.read(0x04, 1);
 
         if (gamepad2.a)
             liftSpeed = 1;
@@ -677,9 +677,9 @@ public class AutoSensorStuff extends OpMode {
         telemetry.addData("Lift", "%.2f", Lift);
 
         //display values
-        telemetry.addData("1 #A", ballSensorcache[0] & 0xFF);
+        telemetry.addData("1 #A", colorAcache[0] & 0xFF);
 
-        telemetry.addData("3 A", ballSensorreader.getI2cAddress().get8Bit());
+        telemetry.addData("3 A", colorAreader.getI2cAddress().get8Bit());
 
         telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
         telemetry.addData("ODS", range1Cache[1] & 0xFF);

@@ -58,11 +58,14 @@ public class MRI_Color_Sensors extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
 
-    byte[] ballSensorcache;
+    byte[] colorAcache;
+    byte[] colorCcache;
     byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
 
-    I2cDevice ballSensor;
-    I2cDeviceSynch ballSensorreader;
+    I2cDevice colorA;
+    I2cDeviceSynch colorAreader;
+    I2cDevice colorC;
+    I2cDeviceSynch colorCreader;
 
     I2cDevice RANGE1;
     I2cDeviceSynch RANGE1Reader;
@@ -326,41 +329,39 @@ public class MRI_Color_Sensors extends OpMode
         String ballColor;
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
 
-        movePower("forward", 0, 0.5);
+        movePower("forward", 0, 1);
 
-        switch(ballSensorcache[0])
+        switch(colorAcache[0])
         {
             case 10:
                 ballColor = "red";
                 break;
-
             case 3:
                 ballColor = "blue";
                 break;
-
             default:
                 ballColor = "none";
+                break;
         }
 
-        movePower("forward", 0, 0.5);
+        movePower("forward", 0, 1);
 
         if (team == ballColor)
         {
-            smoothMovePower("rightTurn", .25, 0.1);
+            smoothMovePower("rightTurn", .25, 0.25);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("leftTurn", .25, 0.1);
+            smoothMovePower("leftTurn", .25, 0.25);
         }
         else if (ballColor == "none")
         {
             stop();
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            return;
         }
         else
         {
-            smoothMovePower("leftTurn", .25, 0.1);
+            smoothMovePower("leftTurn", .25, 0.25);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("rightTurn", .25, 0.1);
+            smoothMovePower("rightTurn", .25, 0.25);
         }
         stop();
     }
@@ -405,11 +406,9 @@ public class MRI_Color_Sensors extends OpMode
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
     }
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+    // Code to run ONCE when the driver hits INIT
     @Override
-    public void init()
+    public void init() // Initializes the hardware variables.
     {
      /* Initialize the hardware variables.
      * The init() method of the hardware class does all the work here
@@ -419,11 +418,14 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("Status", "Initialized");
 
         //the below lines set up the configuration file
-        ballSensor = hardwareMap.i2cDevice.get("ballSensor");
+        colorA = hardwareMap.i2cDevice.get("colorA");
+        colorC = hardwareMap.i2cDevice.get("colorC");
 
-        ballSensorreader = new I2cDeviceSynchImpl(ballSensor, I2cAddr.create8bit(0x3a), false);
+        colorAreader = new I2cDeviceSynchImpl(colorA, I2cAddr.create8bit(0x3a), false);
+        colorCreader = new I2cDeviceSynchImpl(colorC, I2cAddr.create8bit(0x3c), false);
 
-        ballSensorreader.engage();
+        colorAreader.engage();
+        colorCreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  // Point to the gyro in the configuration file
         mrGyro = (ModernRoboticsI2cGyro)sensorGyro;      // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
@@ -436,16 +438,14 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("Say", "Hello Driver");    //
         telemetry.update();
 
-    } // Initializes the hardware variables.
+    }
 
     @Override
     public void init_loop()
     {
     }
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
+    // Code to run ONCE when the driver hits PLAY
     @Override
     public void start()
     {
@@ -457,19 +457,19 @@ public class MRI_Color_Sensors extends OpMode
 
         if(LEDState)
         {
-            ballSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+            colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+            colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
         }
         else
         {
-            ballSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+            colorAreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+            colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
         }
         //Active - For measuring reflected light. Cancels out ambient light
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
+    // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
     @Override
     public void loop()
     {
@@ -520,18 +520,21 @@ public class MRI_Color_Sensors extends OpMode
             LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
             if (LEDState)
             {
-                ballSensorreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+                colorAreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+                colorCreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
             }
             else
             {
-                ballSensorreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+                colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+                colorCreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
             }
         }
 
         if (!gamepad1.x)                        // If the touch sensor is now pressed
             buttonState = false;                // Set the buttonState to false to indicate that the touch sensor was released
 
-        ballSensorcache = ballSensorreader.read(0x04, 1);
+        colorAcache = colorAreader.read(0x04, 1);
+        colorCcache = colorCreader.read(0x04, 1);
 
         if (gamepad1.a)
             target = target + 15;
@@ -620,9 +623,11 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
 
         // Display values
-        telemetry.addData("1 #A", ballSensorcache[0]);
+        telemetry.addData("1 #A", colorAcache[0] & 0xFF);
+        telemetry.addData("2 #C", colorCcache[0] & 0xFF);
 
-        telemetry.addData("2 A", ballSensorreader.getI2cAddress().get8Bit());
+        telemetry.addData("3 A", colorAreader.getI2cAddress().get8Bit());
+        telemetry.addData("4 C", colorCreader.getI2cAddress().get8Bit());
 
         telemetry.addData("1. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
         telemetry.addData("2. target", String.format("%03d", target));

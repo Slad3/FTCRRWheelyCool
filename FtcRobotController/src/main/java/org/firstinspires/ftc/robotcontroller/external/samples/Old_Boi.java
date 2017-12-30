@@ -33,7 +33,7 @@ Support is available by emailing support@modernroboticsinc.com.
 //HEy
 @TeleOp(name = "OLD", group = "K9bot")
 //@Autonomous(...) is the other common choice
-//@Disabled
+@Disabled
 public class Old_Boi extends OpMode {
 
     /* Declare OpMode members. */

@@ -67,7 +67,7 @@ public class HardwareK9bot
     public Servo    Right        = null;
     public Servo    BallArm     = null;
     public Servo    FrontBoi     = null;
-    public I2cDevice ballSensor = null;
+    public I2cDevice colorA = null;
     public I2cDevice RANGE1 = null;
 
     public final static double LEFT_GRAB = 0.68;
@@ -129,7 +129,7 @@ public class HardwareK9bot
         FrontBoi = hwMap.get(Servo.class, "FrontBoi");
 
         //the below lines set up the configuration file
-        ballSensor = hwMap.i2cDevice.get("ballSensor");
+        colorA = hwMap.i2cDevice.get("colorA");
 
         //colorA= hwMap.get(I2cSensor.class, "ca");
         //colorC = hwMap.get(I2cSensor.class, "cc");
