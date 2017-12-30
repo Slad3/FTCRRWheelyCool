@@ -531,7 +531,6 @@ public class AutoSensorStuff extends OpMode {
 
         //correctYAxis(A lot closer to the walll);
 
-
     }
 
     public void autoPlace() {
@@ -572,8 +571,6 @@ public class AutoSensorStuff extends OpMode {
 
 
 
-
-
         heading = 360 - mrGyro.getHeading();  //Reverse direction of heading to match the integrated value
         if (heading == 360)
             heading = 0;
@@ -593,17 +590,6 @@ public class AutoSensorStuff extends OpMode {
 
 
         ballSensorcache = ballSensorreader.read(0x04, 1);
-
-
-
-        if(ballSensorcache[0] == 8 || ballSensorcache[0] == 10 || ballSensorcache[0] == 3)
-            Adetects = true;
-
-
-
-
-
-
 
 
 
