@@ -526,13 +526,13 @@ public class AutoSensorStuff extends OpMode {
 
         //correctXAxis();
 
-        //correctYAxis(general distance);
+        //correctYAxis(18);
 
         //correctZAxis();
 
         //correctXAxis();
 
-        //correctYAxis(A lot closer to the walll);
+
 
     }
 
@@ -597,10 +597,7 @@ public class AutoSensorStuff extends OpMode {
 
 
 
-        if (gamepad2.a)
-            liftSpeed = 1;
-        if (gamepad2.b)
-            liftSpeed = 0.5;
+
 
 
         driveSpeed = 1;
@@ -650,23 +647,23 @@ public class AutoSensorStuff extends OpMode {
         }
 
 
-        if (gamepad1.b)
+        if (gamepad1.dpad_up)
             stop();
 
 
+        if (gamepad1.dpad_left){
+            correctYAxis(18);
+        }
 
-        if (gamepad1.dpad_up)
 
-            movePower("forward", 1, 0.5);
-        if (gamepad1.dpad_down)
+        if (gamepad1.dpad_down){
 
-            movePower("backward", 1, 0.5);
-        if (gamepad1.dpad_left)
+        }
 
-            movePower("leftTurn", 1, 0.5);
-        if (gamepad1.dpad_right)
+        if (gamepad1.dpad_right){
 
-            movePower("rightTurn", 1, 0.5);
+        }
+
 
         // Move both servos to new position.
         leftPosition = Range.clip(leftPosition, robot.LEFT_MIN_RANGE, robot.LEFT_MAX_RANGE);
