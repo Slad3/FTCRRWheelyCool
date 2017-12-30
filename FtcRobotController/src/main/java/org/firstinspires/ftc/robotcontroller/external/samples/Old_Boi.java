@@ -61,13 +61,10 @@ public class Old_Boi extends OpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
 
-    byte[] colorAcache;
-    byte[] colorCcache;
+    byte[] BallSensorcache;
 
-    I2cDevice colorA;
-    I2cDevice colorC;
-    I2cDeviceSynch colorAreader;
-    I2cDeviceSynch colorCreader;
+    I2cDevice BallSensor;
+    I2cDeviceSynch BallSensorreader;
 
     //TouchSensor touch;         //Instance of TouchSensor - for changing color sensor mode
 
@@ -90,7 +87,9 @@ public class Old_Boi extends OpMode {
         robot.BR_drive.setPower(0);
     }
 
-    public void movePower(String movement, double power, double duration){
+    // Moves or turns robot in specified direction, power, and duration. Then stops.
+    public void movePower(String movement, double power, double duration)
+    {
         double startTime = getRuntime();
         switch(movement)
         {
@@ -98,44 +97,145 @@ public class Old_Boi extends OpMode {
                 runtime.reset();
                 while (runtime.seconds() < duration)
                 {
-                    robot.FL_drive.setPower(power * -1);
-                    robot.FR_drive.setPower(power);
-                    robot.BL_drive.setPower(power * -1);
-                    robot.BR_drive.setPower(power);
+                    robot.FL_drive.setPower(power);
+                    robot.FR_drive.setPower(power * -1);
+                    robot.BL_drive.setPower(power);
+                    robot.BR_drive.setPower(power * -1);
                 }
+                break;
 
             case "backward":
                 runtime.reset();
                 while (runtime.seconds() < duration)
                 {
-                    robot.FL_drive.setPower(power);
-                    robot.FR_drive.setPower(power * -1);
-                    robot.BL_drive.setPower(power);
-                    robot.BR_drive.setPower(power * -1);
-                }
-
-            case "left":
-                runtime.reset();
-                while (runtime.seconds() < duration)
-                {
-                    robot.FL_drive.setPower(power);
-                    robot.FR_drive.setPower(power * -1);
+                    robot.FL_drive.setPower(power * -1);
+                    robot.FR_drive.setPower(power);
                     robot.BL_drive.setPower(power * -1);
                     robot.BR_drive.setPower(power);
                 }
+                break;
 
             case "right":
                 runtime.reset();
                 while (runtime.seconds() < duration)
                 {
-                    robot.FL_drive.setPower(power * -1);
+                    robot.FL_drive.setPower(power);
                     robot.FR_drive.setPower(power);
-                    robot.BL_drive.setPower(power);
+                    robot.BL_drive.setPower(power * -1);
                     robot.BR_drive.setPower(power * -1);
                 }
+                break;
+
+            case "left":
+                runtime.reset();
+                while (runtime.seconds() < duration)
+                {
+                    robot.FL_drive.setPower(power * -1);
+                    robot.FR_drive.setPower(power * -1);
+                    robot.BL_drive.setPower(power);
+                    robot.BR_drive.setPower(power);
+                }
+                break;
+
+            case "leftTurn":
+                runtime.reset();
+                while (runtime.seconds() < duration)
+                {
+                    robot.FL_drive.setPower(power);
+                    robot.FR_drive.setPower(power);
+                    robot.BL_drive.setPower(power);
+                    robot.BR_drive.setPower(power);
+                }
+                break;
+
+            case "rightTurn":
+                runtime.reset();
+                while (runtime.seconds() < duration)
+                {
+                    robot.FL_drive.setPower(power * -1);
+                    robot.FR_drive.setPower(power * -1);
+                    robot.BL_drive.setPower(power * -1);
+                    robot.BR_drive.setPower(power * -1);
+                }
+                break;
         }
         stop();
     }
+
+    // Moves or turns robot in specified direction, power, and duration. Does not stop itself.
+    public void smoothMovePower(String movement, double power, double duration)
+    {
+        double startTime = getRuntime();
+        switch(movement)
+        {
+            case "forward":
+                runtime.reset();
+                while (runtime.seconds() < duration)
+                {
+                    robot.FL_drive.setPower(power);
+                    robot.FR_drive.setPower(power * -1);
+                    robot.BL_drive.setPower(power);
+                    robot.BR_drive.setPower(power * -1);
+                }
+                break;
+
+            case "backward":
+                runtime.reset();
+                while (runtime.seconds() < duration)
+                {
+                    robot.FL_drive.setPower(power * -1);
+                    robot.FR_drive.setPower(power);
+                    robot.BL_drive.setPower(power * -1);
+                    robot.BR_drive.setPower(power);
+                }
+                break;
+
+            case "right":
+                runtime.reset();
+                while (runtime.seconds() < duration)
+                {
+                    robot.FL_drive.setPower(power);
+                    robot.FR_drive.setPower(power);
+                    robot.BL_drive.setPower(power * -1);
+                    robot.BR_drive.setPower(power * -1);
+                }
+                break;
+
+            case "left":
+                runtime.reset();
+                while (runtime.seconds() < duration)
+                {
+                    robot.FL_drive.setPower(power * -1);
+                    robot.FR_drive.setPower(power * -1);
+                    robot.BL_drive.setPower(power);
+                    robot.BR_drive.setPower(power);
+                }
+                break;
+
+            case "leftTurn":
+                runtime.reset();
+                while (runtime.seconds() < duration)
+                {
+                    robot.FL_drive.setPower(power);
+                    robot.FR_drive.setPower(power);
+                    robot.BL_drive.setPower(power);
+                    robot.BR_drive.setPower(power);
+                }
+                break;
+
+            case "rightTurn":
+                runtime.reset();
+                while (runtime.seconds() < duration)
+                {
+                    robot.FL_drive.setPower(power * -1);
+                    robot.FR_drive.setPower(power * -1);
+                    robot.BL_drive.setPower(power * -1);
+                    robot.BR_drive.setPower(power * -1);
+                }
+                break;
+        }
+    }
+
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -150,14 +250,11 @@ public class Old_Boi extends OpMode {
         telemetry.addData("Status", "Initialized");
 
         //the below lines set up the configuration file
-        colorA = hardwareMap.i2cDevice.get("colorA");
-        colorC = hardwareMap.i2cDevice.get("colorC");
+        BallSensor = hardwareMap.i2cDevice.get("BallSensor");
 
-        colorAreader = new I2cDeviceSynchImpl(colorA, I2cAddr.create8bit(0x3a), false);
-        colorCreader = new I2cDeviceSynchImpl(colorC, I2cAddr.create8bit(0x3c), false);
+        BallSensorreader = new I2cDeviceSynchImpl(BallSensor, I2cAddr.create8bit(0x3a), false);
 
-        colorAreader.engage();
-        colorCreader.engage();
+        BallSensorreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  //Point to the gyro in the configuration file
         mrGyro = (ModernRoboticsI2cGyro)sensorGyro;      //ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
@@ -185,12 +282,10 @@ public class Old_Boi extends OpMode {
         }
 
         if(LEDState){
-            colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+            BallSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
         }
         else{
-            colorAreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+            BallSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
         }
         //Active - For measuring reflected light. Cancels out ambient light
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
@@ -224,21 +319,18 @@ public class Old_Boi extends OpMode {
             LEDState = !LEDState;                //Change the LEDState to the opposite of what it was
             if(LEDState)
             {
-                colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
+                BallSensorreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
             }
             else
             {
-                colorAreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+                BallSensorreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
             }
         }
 
         if (!gamepad1.x) //If the touch sensor is now pressed
             buttonState = false;                  //Set the buttonState to false to indicate that the touch sensor was released
 
-        colorAcache = colorAreader.read(0x04, 1);
-        colorCcache = colorCreader.read(0x04, 1);
+        BallSensorcache = BallSensorreader.read(0x04, 1);
 
         if (gamepad2.a)
             liftSpeed = 1;
@@ -307,11 +399,9 @@ public class Old_Boi extends OpMode {
         telemetry.addData("Lift", "%.2f", Lift);
 
         //display values
-        telemetry.addData("1 #A", colorAcache[0] & 0xFF);
-        telemetry.addData("2 #C", colorCcache[0] & 0xFF);
+        telemetry.addData("1 #A", BallSensorcache[0] & 0xFF);
 
-        telemetry.addData("3 A", colorAreader.getI2cAddress().get8Bit());
-        telemetry.addData("4 A", colorCreader.getI2cAddress().get8Bit());
+        telemetry.addData("3 A", BallSensorreader.getI2cAddress().get8Bit());
 
         telemetry.addData("1. heading", String.format("%03d", heading));  //Display variables to Driver Station Screen
         telemetry.addData("2. target", String.format("%03d", target));
