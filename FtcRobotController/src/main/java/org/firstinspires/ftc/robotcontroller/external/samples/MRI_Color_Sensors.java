@@ -450,6 +450,14 @@ public class MRI_Color_Sensors extends OpMode
         }
     }
 
+    // Orients the robot to place blocks
+    public void orient()
+    {
+        correctYAxisBackWall();
+        correctXAxisBackWall();
+        //correctZAxis();
+    }
+
     // Code to run ONCE when the driver hits INIT
     @Override
     public void init() // Initializes the hardware variables.
@@ -608,8 +616,7 @@ public class MRI_Color_Sensors extends OpMode
         if (gamepad1.dpad_left)
             knockBall("red");
         if (gamepad1.dpad_right) {
-            correctYAxisBackWall();
-            correctXAxisBackWall();
+            orient();
         }
 
         if (gamepad2.a)

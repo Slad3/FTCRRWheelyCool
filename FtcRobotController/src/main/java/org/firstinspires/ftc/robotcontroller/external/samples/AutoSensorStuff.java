@@ -505,7 +505,7 @@ public class AutoSensorStuff extends OpMode {
     public void orient() {
         //Compares current orientations to preset orientation
 
-        //..gri
+
 
         //correctXAxis();
 
