@@ -36,6 +36,7 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 public class MRI_Color_Sensors extends OpMode
 {
 
+
     /* Declare OpMode members. */
     HardwareK9bot   robot            =   new HardwareK9bot();
     double          leftPosition     =   robot.LEFT_MAX_RANGE;                  // Servo safe position
