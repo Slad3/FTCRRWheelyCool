@@ -1,4 +1,3 @@
-
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
 /*
@@ -17,25 +16,24 @@ To change color sensor I2C Addresses, go to http://modernroboticsedu.com/mod/les
 Support is available by emailing support@modernroboticsinc.com.
 */
 
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.I2cAddr;
-import com.qualcomm.robotcore.hardware.I2cDevice;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+        import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+        import com.qualcomm.robotcore.hardware.GyroSensor;
+        import com.qualcomm.robotcore.hardware.I2cAddr;
+        import com.qualcomm.robotcore.hardware.I2cDevice;
+        import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+        import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
+        import com.qualcomm.robotcore.util.ElapsedTime;
+        import com.qualcomm.robotcore.util.Range;
+        import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 
-@TeleOp(name = "Testing December 30th", group = "K9bot")
+@TeleOp(name = "Optimization", group = "K9bot")
 //@Autonomous(...) is the other common choice
 //@Disabled
-public class MRI_Color_Sensors extends OpMode
+public class MRI_Optimized extends OpMode
 {
-
 
     /* Declare OpMode members. */
     HardwareK9bot   robot            =   new HardwareK9bot();
@@ -276,6 +274,9 @@ public class MRI_Color_Sensors extends OpMode
     // Turns a number of degrees compared to where the robot was when the program started. Positive numbers turn left.
     public void turnAbsolute(int target)
     {
+        heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
+        heading = cleanUp(heading);
+
         int heading = cleanUp(360 - mrGyro.getHeading()); //Set variable to gyro readings
         for (int i = 0; i < 2; i++)
         {
@@ -347,7 +348,8 @@ public class MRI_Color_Sensors extends OpMode
         String ballColor;
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
 
-        movePower("forward", 0, 1);
+        colorAcache = colorAreader.read(0x04, 1);
+        colorCcache = colorCreader.read(0x04, 1);
 
         switch(colorAcache[0])
         {
@@ -428,6 +430,7 @@ public class MRI_Color_Sensors extends OpMode
     // Moves robot close enough to back wall to begin correctXAxis.
     public void correctYAxisBackWall()
     {
+
         int counter = 0;
         turnAbsolute(180);
         movePower("backward", 1, 0.5);
@@ -451,27 +454,60 @@ public class MRI_Color_Sensors extends OpMode
         }
     }
 
+
+    //First Cycle for gyro
+    public void firstCycleFunc()
+    {
+
+        heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
+        heading = cleanUp(heading);
+
+            temp = heading;
+            movePower("rightTurn", 0.25, 1.0);
+            heading = cleanUp(360 - mrGyro.getHeading());  // Reverse direction of heading to match the integrated value.
+            temp1 = heading;
+            if (temp > temp1)
+                temp1 += 360;
+            temp2 = (double) (temp1 - temp);
+            degreesPer10thSecond = temp2 / 10.0; // Saves variable for rest of program.
+            degreesPerSecond = temp2;
+            firstCycle = false;
+    }
+
+
+
     // Orients the robot to place blocks
     public void orient()
     {
         correctYAxisBackWall();
         correctXAxisBackWall();
+        //correctZAxis();
     }
 
-    public void release()
+    public void changeButtonState()
     {
-        // Let go of both servos
-        leftPosition = robot.LEFT_RELEASE; // Slightly offset from straight out
-        rightPosition = robot.RIGHT_RELEASE; // Slightly offset from straight out
-        leftPosition  = Range.clip(leftPosition, robot.LEFT_MIN_RANGE, robot.LEFT_MAX_RANGE);
-        robot.Left.setPosition(leftPosition);
-        rightPosition = Range.clip(rightPosition, robot.RIGHT_MIN_RANGE, robot.RIGHT_MAX_RANGE);
-        robot.Right.setPosition(rightPosition);
+        // The below two if() statements ensure that the mode of the color sensor is changed only once each time the touch sensor is pressed.
+        // The mode of the color sensor is saved to the sensor's long term memory. Just like flash drives, the long term memory has a life time in the 10s or 100s of thousands of cycles.
+        // This seems like a lot but if your program wrote to the long term memory every time though the main loop, it would shorten the life of your sensor.
+         // If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
 
-        // Raise lift above the block to prevent tipping
-        movePower("lift", 1, 0.5);
-        movePower("backwards", 0.5, 0.5);
+            buttonState = true;                   // Change touch state to true because the touch sensor is now pressed
+            LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
+            if (LEDState)
+            {
+                colorAreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+                colorCreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+            }
+            else
+            {
+                colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+                colorCreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+            }
+
+
+
     }
+
 
     // Code to run ONCE when the driver hits INIT
     @Override
@@ -507,6 +543,11 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("Say", "Hello Driver");    //
         telemetry.update();
 
+        firstCycle = true;
+
+        ballPosition = robot.BALL_ARM_UP;
+        robot.BallArm.setPosition(ballPosition);
+
     }
 
     @Override
@@ -538,6 +579,10 @@ public class MRI_Color_Sensors extends OpMode
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
     }
 
+
+
+
+
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
     @Override
     public void loop()
@@ -547,27 +592,12 @@ public class MRI_Color_Sensors extends OpMode
 
         // zAccumulated = mrGyro.getIntegratedZValue();  // Set variables to gyro readings
 
-        odsReadingRaw = ods1.getRawLightDetected();
 
-        heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
-        heading = cleanUp(heading);
+        //heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
+        //heading = cleanUp(heading);
 
-        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);;
-
-        firstCycle = false;
-        if (firstCycle) // This section finds the turning speed of the robot.
-        {
-            ballPosition = robot.BALL_ARM_UP;
-            robot.BallArm.setPosition(ballPosition);
-            temp = heading;
-            movePower("rightTurn", 0.25, 1.0);
-            heading = cleanUp(360 - mrGyro.getHeading());  // Reverse direction of heading to match the integrated value.
-            temp1 = heading;
-            if (temp > temp1)
-                temp1 += 360;
-            temp2 = (double) (temp1 - temp);
-            degreesPer10thSecond = temp2 / 10.0; // Saves variable for rest of program.
-            degreesPerSecond = temp2;
+        if(firstCycle) {
+            firstCycleFunc();
             firstCycle = false;
         }
 
@@ -576,32 +606,9 @@ public class MRI_Color_Sensors extends OpMode
         frontRight = ( gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Front left
         backLeft   = (-gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Back right
         backRight  = (-gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Back left
-        Lift = -gamepad2.left_stick_y * liftSpeed;
+        Lift = gamepad2.left_stick_y * liftSpeed;
 
-        // The below two if() statements ensure that the mode of the color sensor is changed only once each time the touch sensor is pressed.
-        // The mode of the color sensor is saved to the sensor's long term memory. Just like flash drives, the long term memory has a life time in the 10s or 100s of thousands of cycles.
-        // This seems like a lot but if your program wrote to the long term memory every time though the main loop, it would shorten the life of your sensor.
-        if (!buttonState && gamepad1.x)  // If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
-        {
-            buttonState = true;                   // Change touch state to true because the touch sensor is now pressed
-            LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
-            if (LEDState)
-            {
-                colorAreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
-            }
-            else
-            {
-                colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
-            }
-        }
 
-        if (!gamepad1.x)                        // If the touch sensor is now pressed
-            buttonState = false;                // Set the buttonState to false to indicate that the touch sensor was released
-
-        colorAcache = colorAreader.read(0x04, 1);
-        colorCcache = colorCreader.read(0x04, 1);
 
         if (gamepad1.a)
             target = target + 15;
@@ -612,12 +619,12 @@ public class MRI_Color_Sensors extends OpMode
         if (gamepad1.y)
             turnAbsolute(target);
 
-        // drivespeed stuff
-        //driveSpeed = 1;
-        //if (gamepad1.right_bumper)
-        //    driveSpeed = 0.5;
-        //if (gamepad1.left_bumper)
-        //    driveSpeed = 0.25;
+        /* drivespeed stuff
+        driveSpeed = 1;
+        if (gamepad1.right_bumper)
+            driveSpeed = 0.5;
+        if (gamepad1.left_bumper)
+        */    driveSpeed = 0.25;
 
         if (gamepad1.right_bumper)
             frontPosition = robot.FRONT_OUT;
@@ -630,10 +637,8 @@ public class MRI_Color_Sensors extends OpMode
             correctXAxisBackWall();
         if (gamepad1.dpad_left)
             knockBall("red");
-        if (gamepad1.dpad_right)
-        {
+        if (gamepad1.dpad_right) {
             orient();
-            release();
         }
 
         if (gamepad2.a)
