@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.hardware.GyroSensor;
 //Testing
 @TeleOp(name = "Testing Auto Stuff", group = "K9bot")
 //@Autonomous(...) is the other common choice
-//@Disabled
+@Disabled
 public class AutoSensorStuff extends OpMode {
 
     /* Declare OpMode members. */
