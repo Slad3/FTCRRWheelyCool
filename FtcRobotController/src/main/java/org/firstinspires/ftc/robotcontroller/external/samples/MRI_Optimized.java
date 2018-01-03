@@ -32,7 +32,7 @@ Support is available by emailing support@modernroboticsinc.com.
 @TeleOp(name = "Optimization", group = "K9bot")
 //@Autonomous(...) is the other common choice
 //@Disabled
-public class MRI_Optimized extends OpMode
+public class    MRI_Optimized extends OpMode
 {
 
     /* Declare OpMode members. */
@@ -349,7 +349,7 @@ public class MRI_Optimized extends OpMode
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
 
         colorAcache = colorAreader.read(0x04, 1);
-        colorCcache = colorCreader.read(0x04, 1);
+        //colorCcache = colorCreader.read(0x04, 1);
 
         switch(colorAcache[0])
         {
@@ -455,10 +455,10 @@ public class MRI_Optimized extends OpMode
     }
 
 
-    //First Cycle for gyro
+    //First Cycle for sensors
     public void firstCycleFunc()
     {
-
+        //Gyroscope
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         heading = cleanUp(heading);
 
@@ -471,9 +471,23 @@ public class MRI_Optimized extends OpMode
             temp2 = (double) (temp1 - temp);
             degreesPer10thSecond = temp2 / 10.0; // Saves variable for rest of program.
             degreesPerSecond = temp2;
-            firstCycle = false;
-    }
 
+
+
+        //Color Sensor
+        colorAcache = colorAreader.read(0x04, 1);
+        colorCcache = colorCreader.read(0x04, 1);
+
+
+        //Range Sensor
+        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+
+        //ODS Sensor
+        odsReadingRaw = ods1.getRawLightDetected();
+
+
+        firstCycle = false;
+    }
 
 
     // Orients the robot to place blocks
@@ -483,6 +497,7 @@ public class MRI_Optimized extends OpMode
         correctXAxisBackWall();
         //correctZAxis();
     }
+
 
     public void changeButtonState()
     {
@@ -580,15 +595,50 @@ public class MRI_Optimized extends OpMode
     }
 
 
-
-
-
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
     @Override
     public void loop()
     {
 
+        if(firstCycle) {
+            firstCycleFunc();
+            firstCycle = false;
+        }
+
         telemetry.addData("Status", "Running: " + runtime1.toString());
+
+        // Send telemetry message to signify robot running;
+        telemetry.addData("Left", "%.2f", leftPosition);
+        telemetry.addData("Right", "%.2f", rightPosition);
+        telemetry.addData("Front", "%.2f", frontPosition);
+        telemetry.addData("Ball", "%.2f", ballPosition);
+
+        /*
+        telemetry.addData("frontLeft", "%.2f", frontLeft);
+        telemetry.addData("frontRight", "%.2f", frontRight);
+        telemetry.addData("backLeft", "%.2f", backLeft);
+        telemetry.addData("backRight", "%.2f", backRight);
+        */
+
+        telemetry.addData("Lift", "%.2f", Lift);
+        telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
+
+        // Display values
+        telemetry.addData("1. #A", colorAcache[0] & 0xFF);
+        telemetry.addData("2. #C", colorCcache[0] & 0xFF);
+
+        telemetry.addData("3. A", colorAreader.getI2cAddress().get8Bit());
+        telemetry.addData("4. C", colorCreader.getI2cAddress().get8Bit());
+
+        telemetry.addData("5. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
+        telemetry.addData("6. target", String.format("%03d", target));
+
+        telemetry.addData("7. ODS Raw", odsReadingRaw);
+
+        telemetry.addData("8. Ultra Sonic", range1Cache[0] & 0xFF);
+        telemetry.addData("9. range ODS", range1Cache[1] & 0xFF);
+
+        telemetry.update(); // Limited to 100x per second
 
         // zAccumulated = mrGyro.getIntegratedZValue();  // Set variables to gyro readings
 
@@ -614,10 +664,10 @@ public class MRI_Optimized extends OpMode
             target = target + 15;
         if (gamepad1.b)
             target = target - 15;
-        target = cleanUp(target);
+        //target = cleanUp(target);
 
         if (gamepad1.y)
-            turnAbsolute(target);
+            //turnAbsolute(target);
 
         /* drivespeed stuff
         driveSpeed = 1;
@@ -685,37 +735,6 @@ public class MRI_Optimized extends OpMode
         robot.FrontBoi.setPosition(frontPosition);
         robot.BallArm.setPosition(ballPosition);
 
-        // Send telemetry message to signify robot running;
-        telemetry.addData("Left", "%.2f", leftPosition);
-        telemetry.addData("Right", "%.2f", rightPosition);
-        telemetry.addData("Front", "%.2f", frontPosition);
-        telemetry.addData("Ball", "%.2f", ballPosition);
-
-        /*
-        telemetry.addData("frontLeft", "%.2f", frontLeft);
-        telemetry.addData("frontRight", "%.2f", frontRight);
-        telemetry.addData("backLeft", "%.2f", backLeft);
-        telemetry.addData("backRight", "%.2f", backRight);
-        */
-
-        telemetry.addData("Lift", "%.2f", Lift);
-        telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
-
-        // Display values
-        telemetry.addData("1. #A", colorAcache[0] & 0xFF);
-        telemetry.addData("2. #C", colorCcache[0] & 0xFF);
-
-        telemetry.addData("3. A", colorAreader.getI2cAddress().get8Bit());
-        telemetry.addData("4. C", colorCreader.getI2cAddress().get8Bit());
-
-        telemetry.addData("5. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
-        telemetry.addData("6. target", String.format("%03d", target));
-
-        telemetry.addData("7. ODS Raw", odsReadingRaw);
-
-        telemetry.addData("8. Ultra Sonic", range1Cache[0] & 0xFF);
-        telemetry.addData("9. range ODS", range1Cache[1] & 0xFF);
-
-        telemetry.update(); // Limited to 100x per second
     }
+
 }
