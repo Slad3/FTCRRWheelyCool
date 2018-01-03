@@ -61,7 +61,7 @@ public class MRI_Optimized extends OpMode
     byte[] colorAcache;
     byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
 
-    I2cDevice colorA;
+    ModernRoboticsI2cColorSensor colorA;
     I2cDeviceSynch colorAreader;
 
     I2cDevice RANGE1;
