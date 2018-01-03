@@ -467,13 +467,13 @@ public class MRI_Optimized extends OpMode
         degreesPer10thSecond = temp2 / 10.0; // Saves variable for rest of program.
         degreesPerSecond = temp2;
 
-        //Color Sensor
+        // Color Sensor
         colorAcache = colorAreader.read(0x04, 1);
 
-        //Range Sensor
+        // Range Sensor
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
 
-        //ODS Sensor
+        // ODS Sensor
         odsReadingRaw = ods1.getRawLightDetected();
     }
 
@@ -502,6 +502,43 @@ public class MRI_Optimized extends OpMode
             {
                 colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
             }
+    }
+
+    public void sensorUpdate()
+    {
+        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+        odsReadingRaw = ods1.getRawLightDetected();
+        colorAcache = colorAreader.read(0x04, 1);
+        heading = 360 - mrGyro.getHeading();
+        heading = cleanUp(heading);
+
+        // Display values
+        telemetry.addData("1. #A", colorAcache[0] & 0xFF);
+
+        telemetry.addData("2. A", colorAreader.getI2cAddress().get8Bit());
+
+        telemetry.addData("3. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
+
+        telemetry.addData("4. ODS Raw", odsReadingRaw);
+
+        telemetry.addData("5. Ultra Sonic", range1Cache[0] & 0xFF);
+        telemetry.addData("6. range ODS", range1Cache[1] & 0xFF);
+
+        // Send telemetry message to signify robot running;
+        telemetry.addData("Left", "%.2f", leftPosition);
+        telemetry.addData("Right", "%.2f", rightPosition);
+        telemetry.addData("Front", "%.2f", frontPosition);
+        telemetry.addData("Ball", "%.2f", ballPosition);
+
+        telemetry.addData("frontLeft", "%.2f", frontLeft);
+        telemetry.addData("frontRight", "%.2f", frontRight);
+        telemetry.addData("backLeft", "%.2f", backLeft);
+        telemetry.addData("backRight", "%.2f", backRight);
+        telemetry.addData("Lift", "%.2f", Lift);
+
+        telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
+
+        telemetry.update(); // Limited to 100x per second
     }
 
     // Code to run ONCE when the driver hits INIT
@@ -567,16 +604,7 @@ public class MRI_Optimized extends OpMode
     @Override
     public void loop()
     {
-
-        if(firstCycle) {
-            firstCycleFunc();
-            firstCycle = false;
-        }
-
         telemetry.addData("Status", "Running: " + runtime1.toString());
-
-        //heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
-        //heading = cleanUp(heading);
 
         if(firstCycle)
         {
@@ -594,9 +622,10 @@ public class MRI_Optimized extends OpMode
         if (gamepad1.a)
             target = target + 15;
         if (gamepad1.b)
+        {
             target = target - 15;
-        target = cleanUp(target);
-
+            target = cleanUp(target);
+        }
         if (gamepad1.y)
             turnAbsolute(target);
 
@@ -618,7 +647,7 @@ public class MRI_Optimized extends OpMode
         if (gamepad1.dpad_down)
             correctXAxisBackWall();
         if (gamepad1.dpad_left)
-            knockBall("red");
+            sensorUpdate();
         if (gamepad1.dpad_right)
             orient();
 
@@ -626,7 +655,6 @@ public class MRI_Optimized extends OpMode
             liftSpeed = 1;
         if (gamepad2.b)
             liftSpeed = 0.5;
-
         if (gamepad2.x)
         {
             rightPosition = 0.96;
@@ -669,34 +697,6 @@ public class MRI_Optimized extends OpMode
         robot.BallArm.setPosition(ballPosition);
 
         // Send telemetry message to signify robot running;
-        telemetry.addData("Left", "%.2f", leftPosition);
-        telemetry.addData("Right", "%.2f", rightPosition);
-        telemetry.addData("Front", "%.2f", frontPosition);
-        telemetry.addData("Ball", "%.2f", ballPosition);
-
-        /*
-        telemetry.addData("frontLeft", "%.2f", frontLeft);
-        telemetry.addData("frontRight", "%.2f", frontRight);
-        telemetry.addData("backLeft", "%.2f", backLeft);
-        telemetry.addData("backRight", "%.2f", backRight);
-        */
-
-        telemetry.addData("Lift", "%.2f", Lift);
-        telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
-
-        // Display values
-        telemetry.addData("1. #A", colorAcache[0] & 0xFF);
-
-        telemetry.addData("2. A", colorAreader.getI2cAddress().get8Bit());
-
-        telemetry.addData("3. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
-        telemetry.addData("4. target", String.format("%03d", target));
-
-        telemetry.addData("5. ODS Raw", odsReadingRaw);
-
-        telemetry.addData("6. Ultra Sonic", range1Cache[0] & 0xFF);
-        telemetry.addData("7. range ODS", range1Cache[1] & 0xFF);
-
         telemetry.update(); // Limited to 100x per second
     }
 }
