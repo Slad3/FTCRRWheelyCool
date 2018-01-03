@@ -17,6 +17,7 @@ To change color sensor I2C Addresses, go to http://modernroboticsedu.com/mod/les
 Support is available by emailing support@modernroboticsinc.com.
 */
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -25,6 +26,7 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
+import com.qualcomm.robotcore.hardware.configuration.I2cSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
@@ -61,13 +63,10 @@ public class MRI_Color_Sensors extends OpMode
     private ElapsedTime runtime1 = new ElapsedTime();
 
     byte[] colorAcache;
-    byte[] colorCcache;
     byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
 
-    I2cDevice colorA;
+    ModernRoboticsI2cColorSensor colorA;
     I2cDeviceSynch colorAreader;
-    I2cDevice colorC;
-    I2cDeviceSynch colorCreader;
 
     I2cDevice RANGE1;
     I2cDeviceSynch RANGE1Reader;
@@ -485,14 +484,11 @@ public class MRI_Color_Sensors extends OpMode
         telemetry.addData("Status", "Initialized");
 
         //the below lines set up the configuration file
-        colorA = hardwareMap.i2cDevice.get("colorA");
-        colorC = hardwareMap.i2cDevice.get("colorC");
+        colorA = (ModernRoboticsI2cColorSensor) hardwareMap.i2cDevice.get("colorA");
 
-        colorAreader = new I2cDeviceSynchImpl(colorA, I2cAddr.create8bit(0x3a), false);
-        colorCreader = new I2cDeviceSynchImpl(colorC, I2cAddr.create8bit(0x3c), false);
+        colorAreader = new I2cDeviceSynchImpl((I2cDevice) colorA, I2cAddr.create8bit(0x3a), false);
 
         colorAreader.engage();
-        colorCreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  // Point to the gyro in the configuration file
         mrGyro = (ModernRoboticsI2cGyro)sensorGyro;      // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
@@ -506,7 +502,6 @@ public class MRI_Color_Sensors extends OpMode
 
         telemetry.addData("Say", "Hello Driver");    //
         telemetry.update();
-
     }
 
     @Override
@@ -527,12 +522,10 @@ public class MRI_Color_Sensors extends OpMode
         if(LEDState)
         {
             colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
         }
         else
         {
             colorAreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
-            colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
         }
         //Active - For measuring reflected light. Cancels out ambient light
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
@@ -552,7 +545,7 @@ public class MRI_Color_Sensors extends OpMode
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         heading = cleanUp(heading);
 
-        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);;
+        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
 
         firstCycle = false;
         if (firstCycle) // This section finds the turning speed of the robot.
@@ -588,20 +581,17 @@ public class MRI_Color_Sensors extends OpMode
             if (LEDState)
             {
                 colorAreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
             }
             else
             {
                 colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
-                colorCreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
             }
         }
 
         if (!gamepad1.x)                        // If the touch sensor is now pressed
             buttonState = false;                // Set the buttonState to false to indicate that the touch sensor was released
 
-        colorAcache = colorAreader.read(0x04, 1);
-        colorCcache = colorCreader.read(0x04, 1);
+        colorAcache = colorAreader.read(0x04, 1); // rgb
 
         if (gamepad1.a)
             target = target + 15;
@@ -698,10 +688,8 @@ public class MRI_Color_Sensors extends OpMode
 
         // Display values
         telemetry.addData("1. #A", colorAcache[0] & 0xFF);
-        telemetry.addData("2. #C", colorCcache[0] & 0xFF);
 
         telemetry.addData("3. A", colorAreader.getI2cAddress().get8Bit());
-        telemetry.addData("4. C", colorCreader.getI2cAddress().get8Bit());
 
         telemetry.addData("5. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
         telemetry.addData("6. target", String.format("%03d", target));

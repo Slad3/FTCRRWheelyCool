@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cDevice;
@@ -68,8 +69,7 @@ public class HardwareK9bot
     public Servo    Right        = null;
     public Servo    BallArm     = null;
     public Servo    FrontBoi     = null;
-    public I2cDevice colorA = null;
-    public I2cDevice colorC = null;
+    public ModernRoboticsI2cColorSensor colorA = null;
     public I2cDevice RANGE1 = null;
     public OpticalDistanceSensor ods1 = null;
 
@@ -132,8 +132,7 @@ public class HardwareK9bot
         FrontBoi = hwMap.get(Servo.class, "FrontBoi");
 
         //the below lines set up the configuration file
-        colorA = hwMap.i2cDevice.get("colorA");
-        colorC = hwMap.i2cDevice.get("colorC");
+        colorA = (ModernRoboticsI2cColorSensor) hwMap.colorSensor.get("colorA");
 
         Left.setPosition(LEFT_MAX_RANGE);
         Right.setPosition(RIGHT_MIN_RANGE);
