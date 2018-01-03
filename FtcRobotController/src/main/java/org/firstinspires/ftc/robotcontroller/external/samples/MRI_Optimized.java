@@ -618,15 +618,8 @@ public class MRI_Optimized extends OpMode
         }
 
 
-
         //heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         //heading = cleanUp(heading);
-
-        if(firstCycle)
-        {
-            firstCycleFunc();
-            firstCycle = false;
-        }
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
         frontLeft  = ( gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Front right
