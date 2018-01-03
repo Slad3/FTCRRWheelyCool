@@ -504,6 +504,8 @@ public class MRI_Optimized extends OpMode
             }
     }
 
+
+
     // Code to run ONCE when the driver hits INIT
     @Override
     public void init() // Initializes the hardware variables.
@@ -563,6 +565,48 @@ public class MRI_Optimized extends OpMode
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
     }
 
+
+    public void telemetryList()
+    {
+        telemetry.addData("Status", "Running: " + runtime1.toString());
+
+        // Send telemetry message to signify robot running;
+        telemetry.addData("Left", "%.2f", leftPosition);
+        telemetry.addData("Right", "%.2f", rightPosition);
+        telemetry.addData("Front", "%.2f", frontPosition);
+        telemetry.addData("Ball", "%.2f", ballPosition);
+
+        /*
+        telemetry.addData("frontLeft", "%.2f", frontLeft);
+        telemetry.addData("frontRight", "%.2f", frontRight);
+        telemetry.addData("backLeft", "%.2f", backLeft);
+        telemetry.addData("backRight", "%.2f", backRight);
+        */
+
+        telemetry.addData("Lift", "%.2f", Lift);
+        telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
+
+        // Display values
+        telemetry.addData("1. #A", colorAcache[0] & 0xFF);
+        //telemetry.addData("2. #C", colorCcache[0] & 0xFF);
+
+        telemetry.addData("3. A", colorAreader.getI2cAddress().get8Bit());
+        //telemetry.addData("4. C", colorCreader.getI2cAddress().get8Bit());
+
+        telemetry.addData("5. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
+        telemetry.addData("6. target", String.format("%03d", target));
+
+        telemetry.addData("7. ODS Raw", odsReadingRaw);
+
+        telemetry.addData("8. Ultra Sonic", range1Cache[0] & 0xFF);
+        telemetry.addData("9. range ODS", range1Cache[1] & 0xFF);
+
+        telemetry.update(); // Limited to 100x per second
+
+
+    }
+
+
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
     @Override
     public void loop()
@@ -573,7 +617,7 @@ public class MRI_Optimized extends OpMode
             firstCycle = false;
         }
 
-        telemetry.addData("Status", "Running: " + runtime1.toString());
+
 
         //heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         //heading = cleanUp(heading);
@@ -622,6 +666,16 @@ public class MRI_Optimized extends OpMode
         if (gamepad1.dpad_right)
             orient();
 
+
+
+
+
+        //Controller 2
+
+        if (gamepad1.back || gamepad2.back)
+            telemetryList();
+
+
         if (gamepad2.a)
             liftSpeed = 1;
         if (gamepad2.b)
@@ -653,6 +707,10 @@ public class MRI_Optimized extends OpMode
             knockBall("red");
         if (gamepad2.dpad_right)
             knockBall("blue");
+        //
+
+
+
 
         robot.FL_drive.setPower(frontLeft);
         robot.FR_drive.setPower(frontRight);
