@@ -465,9 +465,11 @@ public class MRI_Optimized extends OpMode
         // Gyroscope
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         heading = cleanUp(heading);
+        telemetry.addData("Gyroscope Good", 0);
+
 
         temp = heading;
-        movePower("rightTurn", 0.25, 1.0);
+       // movePower("rightTurn", 0.25, 1.0);
         heading = cleanUp(360 - mrGyro.getHeading());  // Reverse direction of heading to match the integrated value.
         temp1 = heading;
         if (temp > temp1)
@@ -476,14 +478,23 @@ public class MRI_Optimized extends OpMode
         degreesPer10thSecond = temp2 / 10.0; // Saves variable for rest of program.
         degreesPerSecond = temp2;
 
+        telemetry.addData("Did the heading stuff", 0);
+
         //Color Sensor
-        colorAcache = colorAreader.read(0x04, 1);
+        //colorAcache = colorAreader.read(0x04, 1);\
+        telemetry.addData("Color Sensor stuff Good", 0);
 
         //Range Sensor
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+        telemetry.addData("Range sensor stuff good", range1Cache);
 
         //ODS Sensor
         odsReadingRaw = ods.getRawLightDetected();
+        odsRead();
+        telemetry.addData("ods stuff good", odsReadingRaw);
+
+        telemetry.clearAll();
+        telemetry.addData("First Run good", 0);
     }
 
     // Orients the robot to place blocks
