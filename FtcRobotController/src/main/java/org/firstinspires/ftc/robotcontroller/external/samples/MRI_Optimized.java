@@ -55,31 +55,14 @@ public class MRI_Optimized extends OpMode
     boolean red, blue;
     boolean firstCycle = true;
 
-    ElapsedTime runtime = new ElapsedTime();
-    ElapsedTime runtime1 = new ElapsedTime();
+    private ElapsedTime runtime = new ElapsedTime();
+    private ElapsedTime runtime1 = new ElapsedTime();
 
-    //public byte[] colorAcache;
-    byte[] range1Cache; // The read will return an array of bytes. They are stored in this variable
+    byte[] colorAcache;
+    byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
 
-    boolean buttonState = false;  // Tracks the last known state of the gamepad 1 x button
-    boolean LEDState = true;     // Tracks the mode of the color sensor; Active = true, Passive = false
-
-    //int zAccumulated;  // Total rotation left/right
-    int heading;       // Heading left/right. Integer between 0 and 359
-    int target = 0;  // Desired angle to turn to
-    int temp, temp1;
-    double temp2;
-    double degreesPer10thSecond = 0;
-    double degreesPerSecond = 0;
-    double secondsPerDegree = 0;
-
-    GyroSensor sensorGyro;  // General Gyro Sensor allows us to point to the sensor in the configuration file.
-    ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
-/*
-    public ColorSensor colorA1;
-    public ModernRoboticsI2cColorSensor colorA;
-    public I2cDeviceSynch colorAreader;
-*/
+    ModernRoboticsI2cColorSensor colorA;
+    I2cDeviceSynch colorAreader;
 
     I2cDevice RANGE1;
     I2cDeviceSynch RANGE1Reader;
@@ -94,9 +77,23 @@ public class MRI_Optimized extends OpMode
     int state = 0;
     int count = 0;
 
+    boolean buttonState = false;  // Tracks the last known state of the gamepad 1 x button
+    boolean LEDState = true;     // Tracks the mode of the color sensor; Active = true, Passive = false
+
+    //int zAccumulated;  // Total rotation left/right
+    int heading;       // Heading left/right. Integer between 0 and 359
+    int target = 0;  // Desired angle to turn to
+    int temp, temp1;
+    double temp2;
+    double degreesPer10thSecond = 0;
+    double degreesPerSecond = 0;
+
+    GyroSensor sensorGyro;  // General Gyro Sensor allows us to point to the sensor in the configuration file.
+    ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
+
     I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); //Default I2C address for MR Range (7-bit)
-    static final int RANGE1_REG_START = 0x04; //Register to start reading
-    static final int RANGE1_READ_LENGTH = 2; //Number of byte to read
+    public static final int RANGE1_REG_START = 0x04; //Register to start reading
+    public static final int RANGE1_READ_LENGTH = 2; //Number of byte to read
 
     // Sets power of all drive motors to zero.
     public void stop()
@@ -262,11 +259,11 @@ public class MRI_Optimized extends OpMode
         if (degreesFromCurrentAngle < 0)
         {
             degreesFromCurrentAngle = Math.abs(degreesFromCurrentAngle);
-            movePower("leftTurn", 0.25, secondsPerDegree * degreesFromCurrentAngle);
+            movePower("leftTurn", 0.25, degreesFromCurrentAngle / degreesPerSecond);
         }
         else
         {
-            movePower("rightTurn", 0.25, secondsPerDegree * degreesFromCurrentAngle);
+            movePower("rightTurn", 0.25, degreesFromCurrentAngle / degreesPerSecond);
         }
         stop();
     }
@@ -335,23 +332,24 @@ public class MRI_Optimized extends OpMode
         stop();
         heading = cleanUp(360 - mrGyro.getHeading());  //Set variable to gyro reading
         int degreesError = heading - target; // If positive left, if negative right
-        if (heading > target) // If true, we need to turn left
-            movePower("leftTurn", 1, degreesError * secondsPerDegree);
+        if (degreesError > 0)
+            movePower("leftTurn", 1, degreesError / 90);
         else
-            movePower("rightTurn", 1, degreesError * secondsPerDegree);
+            movePower("rightTurn", 1, Math.abs(degreesError) / 90);
         stop();
     }
 
-    // Reads the ODS
+    //Reads the ODS
     public void odsRead ()
     {
+
         odsReadingRaw = ods.getRawLightDetected() / 5;                   //update raw value (This function now returns a value between 0 and 5 instead of 0 and 1 as seen in the video)
         odsReadingLinear = Math.pow(odsReadingRaw, 0.5);
+
     }
 
     public void knockBall (String team)
     {
-    /*
         double timeStart = getRuntime();
         String ballColor;
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
@@ -391,7 +389,6 @@ public class MRI_Optimized extends OpMode
             smoothMovePower("rightTurn", .25, 0.25);
         }
         stop();
-    */
     }
 
     // Fixes any headings passed into it into the range of 0 - 360.
@@ -468,9 +465,11 @@ public class MRI_Optimized extends OpMode
         // Gyroscope
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         heading = cleanUp(heading);
+        telemetry.addData("Gyroscope Good", 0);
+
 
         temp = heading;
-        movePower("rightTurn", 0.25, 1.0);
+       // movePower("rightTurn", 0.25, 1.0);
         heading = cleanUp(360 - mrGyro.getHeading());  // Reverse direction of heading to match the integrated value.
         temp1 = heading;
         if (temp > temp1)
@@ -478,16 +477,24 @@ public class MRI_Optimized extends OpMode
         temp2 = (double) (temp1 - temp);
         degreesPer10thSecond = temp2 / 10.0; // Saves variable for rest of program.
         degreesPerSecond = temp2;
-        secondsPerDegree = 1 / temp2;
 
-        // Color Sensor
-        //colorAcache = colorAreader.read(0x04, 1);
+        telemetry.addData("Did the heading stuff", 0);
 
-        // Range Sensor
+        //Color Sensor
+        //colorAcache = colorAreader.read(0x04, 1);\
+        telemetry.addData("Color Sensor stuff Good", 0);
+
+        //Range Sensor
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+        telemetry.addData("Range sensor stuff good", range1Cache);
 
         //ODS Sensor
         odsReadingRaw = ods.getRawLightDetected();
+        odsRead();
+        telemetry.addData("ods stuff good", odsReadingRaw);
+
+        telemetry.clearAll();
+        telemetry.addData("First Run good", 0);
     }
 
     // Orients the robot to place blocks
@@ -498,42 +505,26 @@ public class MRI_Optimized extends OpMode
         //correctZAxis();
     }
 
-    public void sensorUpdate()
+    public void changeButtonState()
     {
-        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
-        odsReadingRaw = ods.getRawLightDetected();
-        //colorAcache = colorAreader.read(0x04, 1);
-        heading = 360 - mrGyro.getHeading();
-        heading = cleanUp(heading);
+        // The below two if() statements ensure that the mode of the color sensor is changed only once each time the touch sensor is pressed.
+        // The mode of the color sensor is saved to the sensor's long term memory. Just like flash drives, the long term memory has a life time in the 10s or 100s of thousands of cycles.
+        // This seems like a lot but if your program wrote to the long term memory every time though the main loop, it would shorten the life of your sensor.
+        // If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
 
-        // Display values
-        //telemetry.addData("1. #A", colorAcache[0] & 0xFF);
-
-        //telemetry.addData("2. A", colorAreader.getI2cAddress().get8Bit());
-
-        telemetry.addData("3. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
-
-        telemetry.addData("4. ODS Raw", odsReadingRaw);
-
-        telemetry.addData("5. Ultra Sonic", range1Cache[0] & 0xFF);
-        telemetry.addData("6. range ODS", range1Cache[1] & 0xFF);
-
-        // Send telemetry message to signify robot running;
-        telemetry.addData("Left", "%.2f", leftPosition);
-        telemetry.addData("Right", "%.2f", rightPosition);
-        telemetry.addData("Front", "%.2f", frontPosition);
-        telemetry.addData("Ball", "%.2f", ballPosition);
-
-        telemetry.addData("frontLeft", "%.2f", frontLeft);
-        telemetry.addData("frontRight", "%.2f", frontRight);
-        telemetry.addData("backLeft", "%.2f", backLeft);
-        telemetry.addData("backRight", "%.2f", backRight);
-        telemetry.addData("Lift", "%.2f", Lift);
-
-        telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
-
-        telemetry.update(); // Limited to 100x per second
+            buttonState = true;                   // Change touch state to true because the touch sensor is now pressed
+            LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
+            if (LEDState)
+            {
+                colorAreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+            }
+            else
+            {
+                colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+            }
     }
+
+
 
     // Code to run ONCE when the driver hits INIT
     @Override
@@ -547,10 +538,11 @@ public class MRI_Optimized extends OpMode
         telemetry.addData("Status", "Initialized");
 
         //the below lines set up the configuration file
-        //colorA1 = hardwareMap.colorSensor.get("colorA");
-        //colorA = (ModernRoboticsI2cColorSensor) colorA1;
-        //colorAreader = new I2cDeviceSynchImpl((I2cDevice) colorA, I2cAddr.create8bit(0x3a), false);
-        //colorAreader.engage();
+        colorA = (ModernRoboticsI2cColorSensor) hardwareMap.i2cDevice.get("colorA");
+
+        colorAreader = new I2cDeviceSynchImpl((I2cDevice) colorA, I2cAddr.create8bit(0x3a), false);
+
+        colorAreader.engage();
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  // Point to the gyro in the configuration file
         mrGyro = (ModernRoboticsI2cGyro)sensorGyro;      // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
@@ -559,6 +551,7 @@ public class MRI_Optimized extends OpMode
         RANGE1 = hardwareMap.i2cDevice.get("RANGE1");
         RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
         RANGE1Reader.engage();
+
 
         telemetry.addData("Say", "Hello Driver");
         telemetry.update();
@@ -578,7 +571,7 @@ public class MRI_Optimized extends OpMode
         while (mrGyro.isCalibrating()) // Ensure calibration is complete (usually 2 seconds)
         {
         }
-/*
+
         if(LEDState)
         {
             colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
@@ -589,8 +582,8 @@ public class MRI_Optimized extends OpMode
         }
         //Active - For measuring reflected light. Cancels out ambient light
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
-        */
     }
+
 
     public void telemetryList()
     {
@@ -613,10 +606,10 @@ public class MRI_Optimized extends OpMode
         telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
 
         // Display values
-        //telemetry.addData("1. #A", colorAcache[0] & 0xFF);
+        telemetry.addData("1. #A", colorAcache[0] & 0xFF);
         //telemetry.addData("2. #C", colorCcache[0] & 0xFF);
 
-        //telemetry.addData("3. A", colorAreader.getI2cAddress().get8Bit());
+        telemetry.addData("3. A", colorAreader.getI2cAddress().get8Bit());
         //telemetry.addData("4. C", colorCreader.getI2cAddress().get8Bit());
 
         telemetry.addData("5. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
@@ -635,17 +628,20 @@ public class MRI_Optimized extends OpMode
 
     }
 
+
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
     @Override
     public void loop()
     {
-        telemetry.addData("Status", "Running: " + runtime1.toString());
 
-        if(firstCycle)
-        {
+        if(firstCycle) {
             firstCycleFunc();
             firstCycle = false;
         }
+
+
+        //heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
+        //heading = cleanUp(heading);
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
         frontLeft  = ( gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Front right
@@ -655,14 +651,15 @@ public class MRI_Optimized extends OpMode
         Lift = gamepad2.left_stick_y * liftSpeed;
 
         if (gamepad1.a)
-            target = cleanUp(target + 15);
+            target = target + 15;
         if (gamepad1.b)
-            target = cleanUp(target - 15);
+            target = target - 15;
+        target = cleanUp(target);
+
         if (gamepad1.y)
             turnAbsolute(target);
 
-        /*
-        drivespeed stuff
+        /* drivespeed stuff
         driveSpeed = 1;
         if (gamepad1.right_bumper)
             driveSpeed = 0.5;
@@ -680,18 +677,25 @@ public class MRI_Optimized extends OpMode
         if (gamepad1.dpad_down)
             correctXAxisBackWall();
         if (gamepad1.dpad_left)
-            sensorUpdate();
+            knockBall("red");
         if (gamepad1.dpad_right)
             orient();
 
-        // Controller 2
+
+
+
+
+        //Controller 2
+
         if (gamepad1.back || gamepad2.back)
             telemetryList();
+
 
         if (gamepad2.a)
             liftSpeed = 1;
         if (gamepad2.b)
             liftSpeed = 0.5;
+
         if (gamepad2.x)
         {
             rightPosition = 0.96;
@@ -715,9 +719,13 @@ public class MRI_Optimized extends OpMode
         if (gamepad2.dpad_down)
             ballPosition -= 0.01;
         if (gamepad2.dpad_left)
-            //knockBall("red");
+            knockBall("red");
         if (gamepad2.dpad_right)
-            //knockBall("blue");
+            knockBall("blue");
+        //
+
+
+
 
         robot.FL_drive.setPower(frontLeft);
         robot.FR_drive.setPower(frontRight);
@@ -734,6 +742,35 @@ public class MRI_Optimized extends OpMode
         robot.BallArm.setPosition(ballPosition);
 
         // Send telemetry message to signify robot running;
+        telemetry.addData("Left", "%.2f", leftPosition);
+        telemetry.addData("Right", "%.2f", rightPosition);
+        telemetry.addData("Front", "%.2f", frontPosition);
+        telemetry.addData("Ball", "%.2f", ballPosition);
+
+        /*
+        telemetry.addData("frontLeft", "%.2f", frontLeft);
+        telemetry.addData("frontRight", "%.2f", frontRight);
+        telemetry.addData("backLeft", "%.2f", backLeft);
+        telemetry.addData("backRight", "%.2f", backRight);
+        */
+
+        telemetry.addData("Lift", "%.2f", Lift);
+        telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
+
+        // Display values
+        telemetry.addData("1. #A", colorAcache[0] & 0xFF);
+
+        telemetry.addData("2. A", colorAreader.getI2cAddress().get8Bit());
+
+        telemetry.addData("3. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
+        telemetry.addData("4. target", String.format("%03d", target));
+
+        telemetry.addData("5. ODS Raw", odsReadingRaw);
+
+        telemetry.addData("6. Ultra Sonic", range1Cache[0] & 0xFF);
+        telemetry.addData("7. range ODS", range1Cache[1] & 0xFF);
+
         telemetry.update(); // Limited to 100x per second
     }
 }
+
