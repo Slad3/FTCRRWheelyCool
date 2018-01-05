@@ -47,46 +47,46 @@ public class MRI_Optimized extends OpMode
     final double    RIGHT_SPEED      =   0.03;
 
     // Sets rates
-    private double frontLeft;
-    private double frontRight;
-    private double backLeft;
-    private double backRight;
-    private double Lift;
+    double frontLeft;
+    double frontRight;
+    double backLeft;
+    double backRight;
+    double Lift;
     boolean red, blue;
-    private boolean firstCycle = true;
+    boolean firstCycle = true;
 
-    private ElapsedTime runtime = new ElapsedTime();
-    private ElapsedTime runtime1 = new ElapsedTime();
+    ElapsedTime runtime = new ElapsedTime();
+    ElapsedTime runtime1 = new ElapsedTime();
 
-    //private byte[] colorAcache;
-    private byte[] range1Cache; // The read will return an array of bytes. They are stored in this variable
+    //public byte[] colorAcache;
+    byte[] range1Cache; // The read will return an array of bytes. They are stored in this variable
 
     boolean buttonState = false;  // Tracks the last known state of the gamepad 1 x button
-    private boolean LEDState = true;     // Tracks the mode of the color sensor; Active = true, Passive = false
+    boolean LEDState = true;     // Tracks the mode of the color sensor; Active = true, Passive = false
 
     //int zAccumulated;  // Total rotation left/right
     int heading;       // Heading left/right. Integer between 0 and 359
-    private int target = 0;  // Desired angle to turn to
-    private int temp, temp1;
+    int target = 0;  // Desired angle to turn to
+    int temp, temp1;
     double temp2;
     double degreesPer10thSecond = 0;
     double degreesPerSecond = 0;
     double secondsPerDegree = 0;
 
-    private GyroSensor sensorGyro;  // General Gyro Sensor allows us to point to the sensor in the configuration file.
-    private ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
+    GyroSensor sensorGyro;  // General Gyro Sensor allows us to point to the sensor in the configuration file.
+    ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
 /*
-    private ColorSensor colorA1;
-    private ModernRoboticsI2cColorSensor colorA;
-    private I2cDeviceSynch colorAreader;
+    public ColorSensor colorA1;
+    public ModernRoboticsI2cColorSensor colorA;
+    public I2cDeviceSynch colorAreader;
 */
 
-    private I2cDevice RANGE1;
-    private I2cDeviceSynch RANGE1Reader;
+    I2cDevice RANGE1;
+    I2cDeviceSynch RANGE1Reader;
 
-    private OpticalDistanceSensor ods = robot.ods;
+    OpticalDistanceSensor ods = robot.ods;
 
-    private double odsReadingRaw;
+    double odsReadingRaw;
     static double odsReadingLinear;
 
     //sensor value between 0 and 1023
@@ -94,9 +94,9 @@ public class MRI_Optimized extends OpMode
     int state = 0;
     int count = 0;
 
-    private I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); //Default I2C address for MR Range (7-bit)
-    private static final int RANGE1_REG_START = 0x04; //Register to start reading
-    private static final int RANGE1_READ_LENGTH = 2; //Number of byte to read
+    I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); //Default I2C address for MR Range (7-bit)
+    static final int RANGE1_REG_START = 0x04; //Register to start reading
+    static final int RANGE1_READ_LENGTH = 2; //Number of byte to read
 
     // Sets power of all drive motors to zero.
     public void stop()
@@ -108,7 +108,7 @@ public class MRI_Optimized extends OpMode
     }
 
     // Moves or turns robot in specified direction, power, and duration. Then stops.
-    private void movePower(String movement, double power, double duration)
+    public void movePower(String movement, double power, double duration)
     {
         double startTime = getRuntime();
         switch(movement)
@@ -183,7 +183,7 @@ public class MRI_Optimized extends OpMode
     }
 
     // Moves or turns robot in specified direction, power, and duration. Does not stop itself.
-    private void smoothMovePower(String movement, double power, double duration)
+    public void smoothMovePower(String movement, double power, double duration)
     {
         double startTime = getRuntime();
         switch(movement)
@@ -257,7 +257,7 @@ public class MRI_Optimized extends OpMode
     }
 
     // Turns a number of degrees compared to where the robot is. Positive numbers turn left.
-    private void changeAngle(int degreesFromCurrentAngle, double degreesPer10thSecond)
+    public void changeAngle(int degreesFromCurrentAngle, double degreesPer10thSecond)
     {
         if (degreesFromCurrentAngle < 0)
         {
@@ -272,7 +272,7 @@ public class MRI_Optimized extends OpMode
     }
 
     // Turns a number of degrees compared to where the robot was when the program started. Positive numbers turn left.
-    private void turnAbsolute(int target)
+    public void turnAbsolute(int target)
     {
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         heading = cleanUp(heading);
@@ -395,7 +395,7 @@ public class MRI_Optimized extends OpMode
     }
 
     // Fixes any headings passed into it into the range of 0 - 360.
-    private int cleanUp(int input)
+    public int cleanUp(int input)
     {
         if (input == 360)
             return 0;
@@ -407,7 +407,7 @@ public class MRI_Optimized extends OpMode
     }
 
     // Aligns robot with the cipher boxes by scrolling from right to left.
-    private void correctXAxisBackWall()
+    public void correctXAxisBackWall()
     {
         turnAbsolute(180);
         double startTime = getRuntime();
@@ -436,7 +436,7 @@ public class MRI_Optimized extends OpMode
     }
 
     // Moves robot close enough to back wall to begin correctXAxis.
-    private void correctYAxisBackWall()
+    public void correctYAxisBackWall()
     {
 
         int counter = 0;
@@ -463,7 +463,7 @@ public class MRI_Optimized extends OpMode
     }
 
     // First cycle gyro initialization
-    private void firstCycleFunc()
+    public void firstCycleFunc()
     {
         // Gyroscope
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
@@ -491,14 +491,14 @@ public class MRI_Optimized extends OpMode
     }
 
     // Orients the robot to place blocks
-    private void orient()
+    public void orient()
     {
         correctYAxisBackWall();
         correctXAxisBackWall();
         //correctZAxis();
     }
 
-    private void sensorUpdate()
+    public void sensorUpdate()
     {
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
         odsReadingRaw = ods.getRawLightDetected();
