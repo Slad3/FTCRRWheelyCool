@@ -38,7 +38,7 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 //Testing
 @TeleOp(name = "Testing Auto Stuff", group = "K9bot")
 //@Autonomous(...) is the other common choice
-@Disabled
+//@Disabled
 public class AutoSensorStuff extends OpMode {
 
     /* Declare OpMode members. */
@@ -81,7 +81,7 @@ public class AutoSensorStuff extends OpMode {
     I2cDeviceSynch colorAreader;
 
     OpticalDistanceSensor ods = robot.ods;
-    double odsReadingRaw;
+    private double odsReadingRaw;
     static double odsReadingLinear;
 
     //TouchSensor touch;         //Instance of TouchSensor - for changing color sensor mode
