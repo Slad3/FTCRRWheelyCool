@@ -32,6 +32,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 
 //Testing
@@ -78,6 +79,10 @@ public class AutoSensorStuff extends OpMode {
 
     I2cDevice colorA;
     I2cDeviceSynch colorAreader;
+
+    OpticalDistanceSensor ods = robot.ods;
+    double odsReadingRaw;
+    static double odsReadingLinear;
 
     //TouchSensor touch;         //Instance of TouchSensor - for changing color sensor mode
 
@@ -410,6 +415,13 @@ public class AutoSensorStuff extends OpMode {
      */
 
     //Make the sensors actually sensor
+    public void odsRead () {
+
+        odsReadingRaw = ods.getRawLightDetected() / 5;                   //update raw value (This function now returns a value between 0 and 5 instead of 0 and 1 as seen in the video)
+        odsReadingLinear = Math.pow(odsReadingRaw, 0.5);
+
+    }
+
 
     public void knockBall (String color){
 
@@ -541,8 +553,6 @@ public class AutoSensorStuff extends OpMode {
 
 
     }
-
-
 
 
         @Override

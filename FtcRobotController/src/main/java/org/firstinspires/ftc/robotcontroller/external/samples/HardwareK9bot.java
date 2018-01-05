@@ -71,7 +71,7 @@ public class HardwareK9bot
     public Servo    FrontBoi     = null;
     public ModernRoboticsI2cColorSensor colorA = null;
     public I2cDevice RANGE1 = null;
-    public OpticalDistanceSensor ods1 = null;
+    public OpticalDistanceSensor ods = null;
 
     public final static double LEFT_GRAB = 0.68;
     public final static double RIGHT_GRAB = 0.40;
@@ -133,7 +133,7 @@ public class HardwareK9bot
 
         //the below lines set up the configuration file
         colorA = (ModernRoboticsI2cColorSensor) hwMap.colorSensor.get("colorA");
-
+        ods = hwMap.opticalDistanceSensor.get("ods");
         Left.setPosition(LEFT_MAX_RANGE);
         Right.setPosition(RIGHT_MIN_RANGE);
         BallArm.setPosition(BALL_ARM_UP);
