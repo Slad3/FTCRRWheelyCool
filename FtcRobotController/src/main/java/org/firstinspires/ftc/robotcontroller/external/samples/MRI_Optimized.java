@@ -61,19 +61,6 @@ public class MRI_Optimized extends OpMode
     //private byte[] colorAcache;
     private byte[] range1Cache; // The read will return an array of bytes. They are stored in this variable
 
-    //ModernRoboticsI2cColorSensor colorA;
-    //I2cDeviceSynch colorAreader;
-
-    //I2cDeviceSynch RANGE1Reader;
-
-    OpticalDistanceSensor ods = robot.ods;
-
-    //double odsReadingRaw;
-    //static double odsReadingLinear;
-
-    //sensor value between 0 and 1023
-    //int state = 0;
-
     boolean buttonState = false;  // Tracks the last known state of the gamepad 1 x button
     private boolean LEDState = true;     // Tracks the mode of the color sensor; Active = true, Passive = false
 
@@ -97,7 +84,7 @@ public class MRI_Optimized extends OpMode
     private I2cDevice RANGE1;
     private I2cDeviceSynch RANGE1Reader;
 
-    private OpticalDistanceSensor ods1;
+    private OpticalDistanceSensor ods = robot.ods;
 
     private double odsReadingRaw;
     static double odsReadingLinear;
@@ -355,13 +342,11 @@ public class MRI_Optimized extends OpMode
         stop();
     }
 
-    //Reads the ODS
+    // Reads the ODS
     public void odsRead ()
     {
-
         odsReadingRaw = ods.getRawLightDetected() / 5;                   //update raw value (This function now returns a value between 0 and 5 instead of 0 and 1 as seen in the video)
         odsReadingLinear = Math.pow(odsReadingRaw, 0.5);
-
     }
 
     public void knockBall (String team)
@@ -516,7 +501,7 @@ public class MRI_Optimized extends OpMode
     private void sensorUpdate()
     {
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
-        odsReadingRaw = ods1.getRawLightDetected();
+        odsReadingRaw = ods.getRawLightDetected();
         //colorAcache = colorAreader.read(0x04, 1);
         heading = 360 - mrGyro.getHeading();
         heading = cleanUp(heading);
@@ -649,7 +634,6 @@ public class MRI_Optimized extends OpMode
 
 
     }
-
 
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
     @Override
