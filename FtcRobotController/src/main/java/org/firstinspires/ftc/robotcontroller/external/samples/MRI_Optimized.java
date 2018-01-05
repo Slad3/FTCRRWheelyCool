@@ -609,6 +609,9 @@ public class MRI_Optimized extends OpMode
         telemetry.addData("8. Ultra Sonic", range1Cache[0] & 0xFF);
         telemetry.addData("9. range ODS", range1Cache[1] & 0xFF);
 
+        telemetry.addData("10. ODS Raw", odsReadingRaw);
+        telemetry.addData("11. ODS linear", odsReadingLinear);
+
         telemetry.update(); // Limited to 100x per second
 
 
