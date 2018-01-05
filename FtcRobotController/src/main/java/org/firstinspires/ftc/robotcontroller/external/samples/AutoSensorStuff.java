@@ -415,7 +415,8 @@ public class AutoSensorStuff extends OpMode {
      */
 
     //Make the sensors actually sensor
-    public void odsRead () {
+    public void odsRead ()
+    {
 
         odsReadingRaw = ods.getRawLightDetected() / 5;                   //update raw value (This function now returns a value between 0 and 5 instead of 0 and 1 as seen in the video)
         odsReadingLinear = Math.pow(odsReadingRaw, 0.5);

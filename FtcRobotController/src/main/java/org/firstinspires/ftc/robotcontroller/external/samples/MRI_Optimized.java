@@ -67,7 +67,7 @@ public class MRI_Optimized extends OpMode
     I2cDevice RANGE1;
     I2cDeviceSynch RANGE1Reader;
 
-    OpticalDistanceSensor ods1;
+    OpticalDistanceSensor ods = robot.ods;
 
     double odsReadingRaw;
     static double odsReadingLinear;
@@ -339,6 +339,15 @@ public class MRI_Optimized extends OpMode
         stop();
     }
 
+    //Reads the ODS
+    public void odsRead ()
+    {
+
+        odsReadingRaw = ods.getRawLightDetected() / 5;                   //update raw value (This function now returns a value between 0 and 5 instead of 0 and 1 as seen in the video)
+        odsReadingLinear = Math.pow(odsReadingRaw, 0.5);
+
+    }
+
     public void knockBall (String team)
     {
         double timeStart = getRuntime();
@@ -474,7 +483,7 @@ public class MRI_Optimized extends OpMode
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
 
         //ODS Sensor
-        odsReadingRaw = ods1.getRawLightDetected();
+        odsReadingRaw = ods.getRawLightDetected();
     }
 
     // Orients the robot to place blocks
@@ -532,7 +541,6 @@ public class MRI_Optimized extends OpMode
         RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
         RANGE1Reader.engage();
 
-        ods1 = hardwareMap.opticalDistanceSensor.get("ods1");
 
         telemetry.addData("Say", "Hello Driver");
         telemetry.update();
