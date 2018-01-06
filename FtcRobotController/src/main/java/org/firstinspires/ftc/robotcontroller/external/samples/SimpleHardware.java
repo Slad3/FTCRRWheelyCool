@@ -30,7 +30,6 @@
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cDevice;
@@ -58,33 +57,27 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
  *   As the arm servo approaches 0, the arm position moves up (away from the floor).
  *   As the claw servo approaches 0, the claw opens up (drops the game element).
  */
-
-@TeleOp
-
-public class HardwareK9bot
+public class SimpleHardware
 {
     /* Public OpMode members. */
-    public DcMotor  FL_drive   = null;
-    public DcMotor  FR_drive  = null;
-    public DcMotor  BL_drive   = null;
-    public DcMotor  BR_drive  = null;
-    public DcMotor  Lift  =     null;
+    public DcMotor  FL_drive   =    null;
+    public DcMotor  FR_drive  =     null;
+    public DcMotor  BL_drive   =    null;
+    public DcMotor  BR_drive  =     null;
+    public DcMotor  Lift      =     null;
     public Servo    Left         = null;
     public Servo    Right        = null;
     public Servo    BallArm     = null;
     public Servo    FrontBoi     = null;
-    public ColorSensor colorSensor = null;
-    public I2cDevice RANGE1 = null;
-    public OpticalDistanceSensor ods = null;
 
     public final static double LEFT_GRAB = 0.68;
     public final static double RIGHT_GRAB = 0.40;
     public final static double LEFT_RELEASE  = 0.62;
     public final static double RIGHT_RELEASE  = 0.46;
-    public final static double LEFT_MIN_RANGE  = 0.41;
-    public final static double LEFT_MAX_RANGE  = 0.98; // Use as home.
+    public final static double LEFT_MIN_RANGE  = 0.29;
+    public final static double LEFT_MAX_RANGE  = 1.00; // Use as home.
     public final static double RIGHT_MIN_RANGE  = 0.05; // Use as home.
-    public final static double LEFT_HOME  = 0.98;
+    public final static double LEFT_HOME  = 1.00;
     public final static double RIGHT_HOME  = 0.05;
     public final static double RIGHT_MAX_RANGE  = 0.70;
     public final static double BALL_ARM_UP = .00;
@@ -97,7 +90,7 @@ public class HardwareK9bot
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
-    public HardwareK9bot()
+    public SimpleHardware()
     {
     }
 
@@ -137,7 +130,6 @@ public class HardwareK9bot
 
         //the below lines set up the configuration file
         //colorA = (ModernRoboticsI2cColorSensor) hwMap.get("colorA");
-        ods = hwMap.opticalDistanceSensor.get("ods");
         Left.setPosition(LEFT_MAX_RANGE);
         Right.setPosition(RIGHT_MIN_RANGE);
         BallArm.setPosition(BALL_ARM_UP);
