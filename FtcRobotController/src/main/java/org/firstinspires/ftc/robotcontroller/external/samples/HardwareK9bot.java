@@ -59,20 +59,18 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
  *   As the claw servo approaches 0, the claw opens up (drops the game element).
  */
 
-@TeleOp
-
 public class HardwareK9bot
 {
     /* Public OpMode members. */
     public DcMotor  FL_drive   = null;
-    public DcMotor  FR_drive  = null;
+    public DcMotor  FR_drive   = null;
     public DcMotor  BL_drive   = null;
-    public DcMotor  BR_drive  = null;
-    public DcMotor  Lift  =     null;
-    public Servo    Left         = null;
-    public Servo    Right        = null;
-    public Servo    BallArm     = null;
-    public Servo    FrontBoi     = null;
+    public DcMotor  BR_drive   = null;
+    public DcMotor  Lift       = null;
+    public Servo    Left       = null;
+    public Servo    Right      = null;
+    public Servo    BallArm    = null;
+    public Servo    FrontBoi   = null;
     public ColorSensor colorSensor = null;
     public I2cDevice RANGE1 = null;
     public OpticalDistanceSensor ods = null;
@@ -136,8 +134,8 @@ public class HardwareK9bot
         FrontBoi = hwMap.get(Servo.class, "FrontBoi");
 
         //the below lines set up the configuration file
-        //colorA = (ModernRoboticsI2cColorSensor) hwMap.get("colorA");
         ods = hwMap.opticalDistanceSensor.get("ods");
+
         Left.setPosition(LEFT_MAX_RANGE);
         Right.setPosition(RIGHT_MIN_RANGE);
         BallArm.setPosition(BALL_ARM_UP);

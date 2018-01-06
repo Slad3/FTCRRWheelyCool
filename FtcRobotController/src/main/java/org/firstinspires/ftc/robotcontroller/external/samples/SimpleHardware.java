@@ -57,6 +57,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
  *   As the arm servo approaches 0, the arm position moves up (away from the floor).
  *   As the claw servo approaches 0, the claw opens up (drops the game element).
  */
+
 public class SimpleHardware
 {
     /* Public OpMode members. */
@@ -74,10 +75,10 @@ public class SimpleHardware
     public final static double RIGHT_GRAB = 0.40;
     public final static double LEFT_RELEASE  = 0.62;
     public final static double RIGHT_RELEASE  = 0.46;
-    public final static double LEFT_MIN_RANGE  = 0.29;
-    public final static double LEFT_MAX_RANGE  = 1.00; // Use as home.
+    public final static double LEFT_MIN_RANGE  = 0.41;
+    public final static double LEFT_MAX_RANGE  = 0.98; // Use as home.
     public final static double RIGHT_MIN_RANGE  = 0.05; // Use as home.
-    public final static double LEFT_HOME  = 1.00;
+    public final static double LEFT_HOME  = 0.98;
     public final static double RIGHT_HOME  = 0.05;
     public final static double RIGHT_MAX_RANGE  = 0.70;
     public final static double BALL_ARM_UP = .00;
