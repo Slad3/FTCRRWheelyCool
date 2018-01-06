@@ -16,24 +16,24 @@ To change color sensor I2C Addresses, go to http://modernroboticsedu.com/mod/les
 Support is available by emailing support@modernroboticsinc.com.
 */
 
-        import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
-        import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
-        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-        import com.qualcomm.robotcore.hardware.GyroSensor;
-        import com.qualcomm.robotcore.hardware.I2cAddr;
-        import com.qualcomm.robotcore.hardware.I2cDevice;
-        import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
-        import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
-        import com.qualcomm.robotcore.util.ElapsedTime;
-        import com.qualcomm.robotcore.util.Range;
-        import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 
 @TeleOp(name = "Optimization", group = "K9bot")
 //@Autonomous(...) is the other common choice
 //@Disabled
-public class MRI_Optimized extends OpMode
+public class Optimized_Sensors extends OpMode
 {
     /* Declare OpMode members. */
     HardwareK9bot   robot            =   new HardwareK9bot();
@@ -58,13 +58,14 @@ public class MRI_Optimized extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
 
-    //byte[] colorAcache;
+    byte[] colorAcache;
     byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
 
-    //ModernRoboticsI2cColorSensor colorA;
-    //I2cDeviceSynch colorAreader;
+    ModernRoboticsI2cColorSensor colorA;
 
-    I2cDevice RANGE1;
+    I2cDeviceSynch colorAreader;
+
+    I2cDevice RANGE1 = robot.RANGE1;
     I2cDeviceSynch RANGE1Reader;
 
     OpticalDistanceSensor ods = robot.ods;
@@ -88,8 +89,8 @@ public class MRI_Optimized extends OpMode
     double degreesPer10thSecond = 0;
     double degreesPerSecond = 0;
 
-    GyroSensor sensorGyro;  // General Gyro Sensor allows us to point to the sensor in the configuration file.
-    ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
+    GyroSensor sensorGyro = robot.sensorGyro;  // General Gyro Sensor allows us to point to the sensor in the configuration file.
+    ModernRoboticsI2cGyro mrGyro = robot.mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
 
     I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); //Default I2C address for MR Range (7-bit)
     public static final int RANGE1_REG_START = 0x04; //Register to start reading
@@ -353,8 +354,8 @@ public class MRI_Optimized extends OpMode
         double timeStart = getRuntime();
         String ballColor;
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
-        int [] colorAcache = {10};
-        //colorAreader.read(0x04, 1);
+        //int [] colorAcache = {10};
+        colorAreader.read(0x04, 1);
 
         switch(colorAcache[0])
         {
@@ -469,7 +470,7 @@ public class MRI_Optimized extends OpMode
 
 
         temp = heading;
-       // movePower("rightTurn", 0.25, 1.0);
+        // movePower("rightTurn", 0.25, 1.0);
         heading = cleanUp(360 - mrGyro.getHeading());  // Reverse direction of heading to match the integrated value.
         temp1 = heading;
         if (temp > temp1)
@@ -481,7 +482,8 @@ public class MRI_Optimized extends OpMode
         telemetry.addData("Did the heading stuff", 0);
 
         //Color Sensor
-        //colorAcache = colorAreader.read(0x04, 1);\
+
+        colorAcache = colorAreader.read(0x04, 1);
         telemetry.addData("Color Sensor stuff Good", 0);
 
         //Range Sensor
@@ -512,16 +514,16 @@ public class MRI_Optimized extends OpMode
         // This seems like a lot but if your program wrote to the long term memory every time though the main loop, it would shorten the life of your sensor.
         // If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
 
-            buttonState = true;                   // Change touch state to true because the touch sensor is now pressed
-            LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
-            if (LEDState)
-            {
-                //colorAreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
-            }
-            else
-            {
-                //colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
-            }
+        buttonState = true;                   // Change touch state to true because the touch sensor is now pressed
+        LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
+        if (LEDState)
+        {
+            //colorAreader.write8(3, 0);    // Set the mode of the color sensor using LEDState
+        }
+        else
+        {
+            //colorAreader.write8(3, 1);    // Set the mode of the color sensor using LEDState
+        }
     }
 
 
@@ -538,17 +540,16 @@ public class MRI_Optimized extends OpMode
         telemetry.addData("Status", "Initialized");
 
         //the below lines set up the configuration file
-        //colorA = (ModernRoboticsI2cColorSensor) hardwareMap.i2cDevice.get("colorA");
+        colorA = (ModernRoboticsI2cColorSensor) hardwareMap.i2cDevice.get("colorA");
 
         //colorAreader = new I2cDeviceSynchImpl((I2cDevice) colorA, I2cAddr.create8bit(0x3a), false);
 
         //colorAreader.engage();
 
-        sensorGyro = hardwareMap.gyroSensor.get("gyro");  // Point to the gyro in the configuration file
+        //sensorGyro = hardwareMap.gyroSensor.get("gyro");  // Point to the gyro in the configuration file
         mrGyro = (ModernRoboticsI2cGyro)sensorGyro;      // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
         mrGyro.calibrate();  // Calibrate the sensor so it knows where 0 is and what still is. DO NOT MOVE SENSOR WHILE BLUE LIGHT IS SOLID
 
-        RANGE1 = hardwareMap.i2cDevice.get("RANGE1");
         RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
         RANGE1Reader.engage();
 
@@ -623,6 +624,8 @@ public class MRI_Optimized extends OpMode
         telemetry.addData("10. ODS Raw", odsReadingRaw);
         telemetry.addData("11. ODS linear", odsReadingLinear);
 
+        telemetry.addData("12. ColorA ", colorAcache[0]);
+
         telemetry.update(); // Limited to 100x per second
 
 
@@ -631,10 +634,9 @@ public class MRI_Optimized extends OpMode
 
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
     @Override
-    public void loop()
-    {
+    public void loop() {
 
-        if(firstCycle) {
+        if (firstCycle) {
             firstCycleFunc();
             firstCycle = false;
         }
@@ -644,18 +646,22 @@ public class MRI_Optimized extends OpMode
         //heading = cleanUp(heading);
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
-        frontLeft  = ( gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Front right
-        frontRight = ( gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Front left
-        backLeft   = (-gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Back right
-        backRight  = (-gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Back left
+        frontLeft = (gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Front right
+        frontRight = (gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Front left
+        backLeft = (-gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back right
+        backRight = (-gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back left
         Lift = gamepad2.left_stick_y * liftSpeed;
+
 
         if (gamepad1.a)
             target = target + 15;
-        if (gamepad1.b)
+        if (gamepad1.b){
             target = target - 15;
-        target = cleanUp(target);
+            target = cleanUp(target);
+        }
 
+        if (gamepad1.x)
+            knockBall("red");
         if (gamepad1.y)
             turnAbsolute(target);
 
@@ -686,15 +692,8 @@ public class MRI_Optimized extends OpMode
 
 
         //Controller 2
-
         if (gamepad1.back || gamepad2.back)
             telemetryList();
-
-
-        if (gamepad2.a)
-            liftSpeed = 1;
-        if (gamepad2.b)
-            liftSpeed = 0.5;
 
         if (gamepad2.x)
         {
@@ -722,7 +721,6 @@ public class MRI_Optimized extends OpMode
             knockBall("red");
         if (gamepad2.dpad_right)
             knockBall("blue");
-        //
 
 
 
@@ -743,4 +741,5 @@ public class MRI_Optimized extends OpMode
 
     }
 }
+
 

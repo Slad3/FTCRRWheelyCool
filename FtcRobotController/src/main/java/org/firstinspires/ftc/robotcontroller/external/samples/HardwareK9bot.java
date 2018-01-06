@@ -30,8 +30,9 @@
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
@@ -58,9 +59,6 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
  *   As the arm servo approaches 0, the arm position moves up (away from the floor).
  *   As the claw servo approaches 0, the claw opens up (drops the game element).
  */
-
-@TeleOp
-
 public class HardwareK9bot
 {
     /* Public OpMode members. */
@@ -73,24 +71,28 @@ public class HardwareK9bot
     public Servo    Right        = null;
     public Servo    BallArm     = null;
     public Servo    FrontBoi     = null;
-    public ColorSensor colorSensor = null;
+    //public ModernRoboticsI2cColorSensor colorA = null;
     public I2cDevice RANGE1 = null;
     public OpticalDistanceSensor ods = null;
+    GyroSensor sensorGyro;
+    ModernRoboticsI2cGyro mrGyro;
 
     public final static double LEFT_GRAB = 0.68;
     public final static double RIGHT_GRAB = 0.40;
     public final static double LEFT_RELEASE  = 0.62;
     public final static double RIGHT_RELEASE  = 0.46;
-    public final static double LEFT_MIN_RANGE  = 0.41;
-    public final static double LEFT_MAX_RANGE  = 0.98; // Use as home.
+    public final static double LEFT_MIN_RANGE  = 0.29;
+    public final static double LEFT_MAX_RANGE  = 1.00; // Use as home.
     public final static double RIGHT_MIN_RANGE  = 0.05; // Use as home.
-    public final static double LEFT_HOME  = 0.98;
+    public final static double LEFT_HOME  = 1.00;
     public final static double RIGHT_HOME  = 0.05;
     public final static double RIGHT_MAX_RANGE  = 0.70;
     public final static double BALL_ARM_UP = .00;
     public final static double BALL_ARM_DOWN = 1;
     public final static double FRONT_OUT = .98;
     public final static double FRONT_IN = .0;
+    ModernRoboticsI2cColorSensor colorA;
+    ModernRoboticsI2cColorSensor colorC;
 
     /* Local OpMode members. */
     HardwareMap hwMap  = null;
@@ -134,6 +136,16 @@ public class HardwareK9bot
         Right = hwMap.get(Servo.class, "Right");
         BallArm = hwMap.get(Servo.class, "BallArm");
         FrontBoi = hwMap.get(Servo.class, "FrontBoi");
+
+
+        //Define all sensors
+        //colorA = (ModernRoboticsI2cColorSensor) hwMap.i2cDevice.get("colorA");
+        //colorC = (ModernRoboticsI2cColorSensor) hwMap.i2cDevice.get("colorC");
+        ods = hwMap.opticalDistanceSensor.get("ods");
+        sensorGyro = hwMap.gyroSensor.get("gyro");
+        RANGE1 = hwMap.i2cDevice.get("RANGE1");
+
+
 
         //the below lines set up the configuration file
         //colorA = (ModernRoboticsI2cColorSensor) hwMap.get("colorA");
