@@ -53,7 +53,6 @@ public class MRI_Optimized extends OpMode
     double          driveSpeed       =   1;
     final double    LEFT_SPEED       =   0.03;                            // Sets rate to move servo
     final double    RIGHT_SPEED      =   0.03;
-    ColorSensor colorSensor;
 
     // Sets rates
     double frontLeft;
@@ -76,13 +75,15 @@ public class MRI_Optimized extends OpMode
     double odsReadingRaw;
     static double odsReadingLinear;
 
+    ColorSensor colorSensor;    // Hardware Device Object
+    boolean bPrevState = false;
+    boolean bCurrState = false;
+    boolean bLedOn = true; // bLedOn represents the state of the LED.
+
     //sensor value between 0 and 1023
     int raw1;
     int state = 0;
     int count = 0;
-
-    boolean buttonState = false;  // Tracks the last known state of the gamepad 1 x button
-    boolean LEDState = true;     // Tracks the mode of the color sensor; Active = true, Passive = false
 
     //int zAccumulated;  // Total rotation left/right
     int heading;       // Heading left/right. Integer between 0 and 359
@@ -98,23 +99,6 @@ public class MRI_Optimized extends OpMode
     I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); // Default I2C address for MR Range (7-bit)
     public static final int RANGE1_REG_START = 0x04; // Register to start reading
     public static final int RANGE1_READ_LENGTH = 2; // Number of byte to read
-
-    // hsvValues is an array that will hold the hue, saturation, and value information.
-    float hsvValues[] = {0F,0F,0F};
-
-    // values is a reference to the hsvValues array.
-    final float values[] = hsvValues;
-
-    // get a reference to the RelativeLayout so we can change the background
-    // color of the Robot Controller app to match the hue detected by the RGB sensor.
-    final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(R.id.RelativeLayout);
-
-    // bPrevState and bCurrState represent the previous and current state of the button.
-    boolean bPrevState = false;
-    boolean bCurrState = false;
-
-    // bLedOn represents the state of the LED.
-    boolean bLedOn = true;
 
     // Sets power of all drive motors to zero.
     public void stop()
@@ -370,18 +354,23 @@ public class MRI_Optimized extends OpMode
     // Reads the color sensor
     public void colorRead()
     {
-        // convert the RGB values to HSV values.
-        colorSensor.enableLed(bLedOn);
-        Color.RGBToHSV(colorSensor.red() * 8, colorSensor.green() * 8, colorSensor.blue() * 8, hsvValues);
+        // check the status of the x button on either gamepad.
+        bCurrState = gamepad1.x;
+        // check for button state transitions.
+        if (bCurrState && (bCurrState != bPrevState))  {
 
-        // change the background color to match the color detected by the RGB sensor.
-        // pass a reference to the hue, saturation, and value array as an argument
-        // to the HSVToColor method.
-        relativeLayout.post(new Runnable() {
-            public void run() {
-                relativeLayout.setBackgroundColor(Color.HSVToColor(0xff, values));
-            }
-        });
+            // button is transitioning to a pressed state. So Toggle LED
+            bLedOn = !bLedOn;
+        }
+        bPrevState = bCurrState;
+
+        colorSensor.enableLed(bLedOn);
+
+        telemetry.addData("LED", bLedOn ? "On" : "Off");
+        telemetry.addData("Red  ", colorSensor.red());
+        telemetry.addData("Green", colorSensor.green());
+        telemetry.addData("Blue ", colorSensor.blue());
+        telemetry.update();
     }
 
     // Reads the range sensor
@@ -540,24 +529,6 @@ public class MRI_Optimized extends OpMode
         //correctZAxis();
     }
 
-    // Switches color sensor state
-    public void changeButtonState()
-    {
-        // check the status of the x button on either gamepad.
-        bCurrState = gamepad1.x;
-
-        // check for button state transitions.
-        if ((bCurrState == true) && (bCurrState != bPrevState))
-        {
-            // button is transitioning to a pressed state. So Toggle LED
-            bLedOn = !bLedOn;
-            colorSensor.enableLed(bLedOn);
-        }
-
-        // update previous state variable.
-        bPrevState = bCurrState;
-    }
-
     // Code to run ONCE when the driver hits INIT
     @Override
     public void init() // Initializes the hardware variables.
@@ -566,10 +537,9 @@ public class MRI_Optimized extends OpMode
      * The init() method of the hardware class does all the work here
      */
         // get a reference to our ColorSensor object.
-        colorSensor = hardwareMap.colorSensor.get("sensor_color");
+        //colorSensor = hardwareMap.colorSensor.get("sensor_color");
 
         // Set the LED in the beginning
-        colorSensor.enableLed(bLedOn);
         robot.init(hardwareMap);
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  // Point to the gyro in the configuration file
@@ -579,6 +549,9 @@ public class MRI_Optimized extends OpMode
         RANGE1 = hardwareMap.i2cDevice.get("RANGE1");
         RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
         RANGE1Reader.engage();
+
+        // get a reference to our ColorSensor object.
+        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -600,18 +573,8 @@ public class MRI_Optimized extends OpMode
         while (mrGyro.isCalibrating()) // Ensure calibration is complete (usually 2 seconds)
         {
         }
-/*
-        if(LEDState)
-        {
-            colorAreader.write8(3, 0);    //Set the mode of the color sensor using LEDState
-        }
-        else
-        {
-            colorAreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
-        }
-        //Active - For measuring reflected light. Cancels out ambient light
-        //Passive - For measuring ambient light, eg. the FTC Color Beacon
-*/
+        // Set the LED in the beginning
+        colorSensor.enableLed(bLedOn);
     }
 
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
@@ -637,7 +600,7 @@ public class MRI_Optimized extends OpMode
         if (gamepad1.b)
             target = cleanUp(target - 15);
         if (gamepad1.x)
-            changeButtonState();
+            colorRead();
         if (gamepad1.y)
             turnAbsolute(target);
 
@@ -711,17 +674,6 @@ public class MRI_Optimized extends OpMode
         robot.Right.setPosition(rightPosition);
         robot.FrontBoi.setPosition(frontPosition);
         robot.BallArm.setPosition(ballPosition);
-
-        // change the background color to match the color detected by the RGB sensor.
-        // pass a reference to the hue, saturation, and value array as an argument
-        // to the HSVToColor method.
-        relativeLayout.post(new Runnable() {
-            public void run() {
-                relativeLayout.setBackgroundColor(Color.HSVToColor(0xff, values));
-            }
-        });
-
-        telemetry.update();
         }
 
         public void telemetryList()
@@ -741,14 +693,6 @@ public class MRI_Optimized extends OpMode
 
             telemetry.addData("Lift", "%.2f", Lift);
             telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
-
-            colorSensor.enableLed(bLedOn);
-            telemetry.addData("LED", bLedOn ? "On" : "Off");
-            telemetry.addData("Clear", colorSensor.alpha());
-            telemetry.addData("Red  ", colorSensor.red());
-            telemetry.addData("Green", colorSensor.green());
-            telemetry.addData("Blue ", colorSensor.blue());
-            telemetry.addData("Hue", hsvValues[0]);
 
             telemetry.addData("5. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
             telemetry.addData("6. target", String.format("%03d", target));
