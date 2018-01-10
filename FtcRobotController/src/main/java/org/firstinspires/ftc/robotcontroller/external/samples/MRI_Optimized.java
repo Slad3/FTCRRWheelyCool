@@ -67,12 +67,7 @@ public class MRI_Optimized extends OpMode
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime runtime1 = new ElapsedTime();
 
-    byte[] colorAcache;
     byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
-
-    ModernRoboticsI2cColorSensor colorA;
-    I2cDeviceSynch colorAreader;
-
     I2cDevice RANGE1;
     I2cDeviceSynch RANGE1Reader;
 
@@ -376,6 +371,7 @@ public class MRI_Optimized extends OpMode
     public void colorRead()
     {
         // convert the RGB values to HSV values.
+        colorSensor.enableLed(bLedOn);
         Color.RGBToHSV(colorSensor.red() * 8, colorSensor.green() * 8, colorSensor.blue() * 8, hsvValues);
 
         // change the background color to match the color detected by the RGB sensor.
@@ -418,23 +414,11 @@ public class MRI_Optimized extends OpMode
     public void knockBall (String team)
     {
         double timeStart = getRuntime();
-        String ballColor;
+        String ballColor = "";
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
 
-        colorAcache = colorAreader.read(0x04, 1);
+        // Code to sense color
 
-        switch(colorAcache[0])
-        {
-            case 10:
-                ballColor = "red";
-                break;
-            case 3:
-                ballColor = "blue";
-                break;
-            default:
-                ballColor = "none";
-                break;
-        }
 
         movePower("forward", 0, 0.25);
 
@@ -727,6 +711,17 @@ public class MRI_Optimized extends OpMode
         robot.Right.setPosition(rightPosition);
         robot.FrontBoi.setPosition(frontPosition);
         robot.BallArm.setPosition(ballPosition);
+
+        // change the background color to match the color detected by the RGB sensor.
+        // pass a reference to the hue, saturation, and value array as an argument
+        // to the HSVToColor method.
+        relativeLayout.post(new Runnable() {
+            public void run() {
+                relativeLayout.setBackgroundColor(Color.HSVToColor(0xff, values));
+            }
+        });
+
+        telemetry.update();
         }
 
         public void telemetryList()
@@ -747,6 +742,7 @@ public class MRI_Optimized extends OpMode
             telemetry.addData("Lift", "%.2f", Lift);
             telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
 
+            colorSensor.enableLed(bLedOn);
             telemetry.addData("LED", bLedOn ? "On" : "Off");
             telemetry.addData("Clear", colorSensor.alpha());
             telemetry.addData("Red  ", colorSensor.red());
