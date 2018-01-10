@@ -106,6 +106,37 @@ public class Sensor extends LinearOpMode {
 
             colorSensor.enableLed(bLedOn);
 
+            int highest = 0;
+            String high = new String();
+            int count = 1;
+            int [] colorsRGB = {colorSensor.red(), colorSensor.green(), colorSensor.blue()};
+            for(int m: colorsRGB){
+                if(m > highest){
+                    switch(m){
+                        case 1:
+                            high = "red";
+                            break;
+                        case 2:
+                            high = "green";
+                            break;
+                        case 3:
+                            high = "blue";
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                count++;
+            }
+
+
+
+
+
+
+
+
+
             // convert the RGB values to HSV values.
 //            Color.RGBToHSV(colorSensor.red() * 8, colorSensor.green() * 8, colorSensor.blue() * 8, hsvValues);
 
