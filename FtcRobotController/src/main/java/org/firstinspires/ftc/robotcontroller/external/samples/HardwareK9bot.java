@@ -136,6 +136,7 @@ public class HardwareK9bot
         //the below lines set up the configuration file
         ods = hwMap.opticalDistanceSensor.get("ods");
 
+
         Left.setPosition(LEFT_MAX_RANGE);
         Right.setPosition(RIGHT_MIN_RANGE);
         BallArm.setPosition(BALL_ARM_UP);
