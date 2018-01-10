@@ -36,7 +36,7 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 public class Simple extends OpMode
 {
     /* Declare OpMode members. */
-    HardwareK9bot   robot            =   new HardwareK9bot();
+    SimpleHardware   robot            =   new SimpleHardware();
     double          leftPosition     =   robot.LEFT_MAX_RANGE;                  // Servo safe position
     double          rightPosition    =   robot.RIGHT_MIN_RANGE;                 // Servo safe position
     double          ballPosition     =   robot.BALL_ARM_UP;
@@ -107,6 +107,10 @@ public class Simple extends OpMode
     @Override
     public void loop()
     {
+        frontLeft = 0;
+        frontRight = 0;
+        backRight = 0;
+        backLeft = 0;
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
         frontLeft  = ( gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Front right
@@ -115,23 +119,16 @@ public class Simple extends OpMode
         backRight  = (-gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x)/2 * driveSpeed; // Back left
         Lift = gamepad2.left_stick_y * liftSpeed;
 
-
         driveSpeed = 1;
         if (gamepad1.right_bumper)
             driveSpeed = 0.5;
         if (gamepad1.left_bumper)
             driveSpeed = 0.25;
 
-
         if (gamepad1.right_bumper)
             frontPosition = robot.FRONT_OUT;
         else if (gamepad1.left_bumper)
             frontPosition = robot.FRONT_IN;
-
-        //Controller 2
-
-        if (gamepad1.back || gamepad2.back)
-            telemetryList();
 
         if (gamepad2.a)
             liftSpeed = 1;
@@ -175,8 +172,7 @@ public class Simple extends OpMode
         robot.FrontBoi.setPosition(frontPosition);
         robot.BallArm.setPosition(ballPosition);
 
-        if (gamepad1.a)
-            telemetryList();
+        telemetryList();
     }
 }
 
