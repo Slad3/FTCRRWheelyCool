@@ -129,14 +129,6 @@ public class Sensor extends LinearOpMode {
                 count++;
             }
 
-
-
-
-
-
-
-
-
             // convert the RGB values to HSV values.
 //            Color.RGBToHSV(colorSensor.red() * 8, colorSensor.green() * 8, colorSensor.blue() * 8, hsvValues);
 
@@ -146,25 +138,11 @@ public class Sensor extends LinearOpMode {
             telemetry.addData("Red  ", colorSensor.red());
             telemetry.addData("Green", colorSensor.green());
             telemetry.addData("Blue ", colorSensor.blue());
-//            telemetry.addData("Hue", hsvValues[0]);
 
-            // change the background color to match the color detected by the RGB sensor.
-            // pass a reference to the hue, saturation, and value array as an argument
-            // to the HSVToColor method.
-//            relativeLayout.post(new Runnable() {
-//                public void run() {
-//                    relativeLayout.setBackgroundColor(Color.HSVToColor(0xff, values));
-//                }
-//            });
+
 
             telemetry.update();
         }
 
-        // Set the panel back to the default color
-//        relativeLayout.post(new Runnable() {
-//            public void run() {
-//                relativeLayout.setBackgroundColor(Color.WHITE);
-//            }
-//        });
     }
 }

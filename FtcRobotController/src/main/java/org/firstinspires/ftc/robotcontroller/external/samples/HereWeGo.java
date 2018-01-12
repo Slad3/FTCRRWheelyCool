@@ -1,58 +1,77 @@
+/* Copyright (c) 2017 FIRST. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted (subject to the limitations in the disclaimer below) provided that
+ * the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list
+ * of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of FIRST nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior written permission.
+ *
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
+ * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
-/*
-Modern Robotics Color Sensors Example with color number
-Created 9/29/2016 by Colton Mehlhoff of Modern Robotics using FTC SDK 2.2
-Reuse permitted with credit where credit is due
+import android.app.Activity;
+import android.graphics.Color;
+import android.view.View;
 
-Configuration:
-I2CDevice "ca" (MRI Color Sensor with I2C address 0x3a (0x1d 7-bit)
-I2CDevice "cc" (MRI Color Sensor with default I2C address 0x3c (0x1e 7-bit)
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import android.app.Activity;
+import android.graphics.Color;
+import android.view.View;
+import com.qualcomm.ftcrobotcontroller.R;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
-ModernRoboticsI2cColorSensor class is not being used because it can not access color number.
-ColorSensor class is not being used because it can not access color number.
-
-To change color sensor I2C Addresses, go to http://modernroboticsedu.com/mod/lesson/view.php?id=96
-Support is available by emailing support@modernroboticsinc.com.
-*/
-
-        import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
-        import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
-        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-        import com.qualcomm.robotcore.hardware.GyroSensor;
-        import com.qualcomm.robotcore.hardware.I2cAddr;
-        import com.qualcomm.robotcore.hardware.I2cDevice;
-        import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
-        import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
-        import com.qualcomm.robotcore.util.ElapsedTime;
-        import com.qualcomm.robotcore.util.Range;
-        import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
-        import android.app.Activity;
-        import android.graphics.Color;
-        import android.view.View;
-        import com.qualcomm.ftcrobotcontroller.R;
-        import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-        import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-        import com.qualcomm.robotcore.hardware.ColorSensor;
-
-
-@TeleOp(name = "Optimization", group = "K9bot")
-//@Autonomous(...) is the other common choice
+@TeleOp(name = "HereWeGo", group = "Sensor")
 //@Disabled
-public class MRI_Optimized extends OpMode
-{
+public class HereWeGo extends LinearOpMode {
+
     /* Declare OpMode members. */
-    HardwareK9bot   robot            =   new HardwareK9bot();
-    double          leftPosition     =   robot.LEFT_MAX_RANGE;                  // Servo safe position
-    double          rightPosition    =   robot.RIGHT_MIN_RANGE;                 // Servo safe position
-    double          ballPosition     =   robot.BALL_ARM_UP;
-    double          frontPosition     =  robot.FRONT_IN;
-    double          liftSpeed        =   1;
-    double          driveSpeed       =   1;
-    final double    LEFT_SPEED       =   0.03;                            // Sets rate to move servo
-    final double    RIGHT_SPEED      =   0.03;
+    HardwareK9bot robot = new HardwareK9bot();
+    double leftPosition = robot.LEFT_MAX_RANGE;                  // Servo safe position
+    double rightPosition = robot.RIGHT_MIN_RANGE;                 // Servo safe position
+    double ballPosition = robot.BALL_ARM_UP;
+    double frontPosition = robot.FRONT_IN;
+    double liftSpeed = 1;
+    double driveSpeed = 1;
+    final double LEFT_SPEED = 0.03;                            // Sets rate to move servo
+    final double RIGHT_SPEED = 0.03;
 
     // Sets rates
     double frontLeft;
@@ -100,9 +119,10 @@ public class MRI_Optimized extends OpMode
     public static final int RANGE1_REG_START = 0x04; // Register to start reading
     public static final int RANGE1_READ_LENGTH = 2; // Number of byte to read
 
+    ColorSensor colorSensor;    // Hardware Device Object
+
     // Sets power of all drive motors to zero.
-    public void motorStop()
-    {
+    public void motorStop() {
         robot.FL_drive.setPower(0);
         robot.FR_drive.setPower(0);
         robot.BL_drive.setPower(0);
@@ -110,15 +130,12 @@ public class MRI_Optimized extends OpMode
     }
 
     // Moves or turns robot in specified direction, power, and duration. Then stops.
-    public void movePower(String movement, double power, double duration)
-    {
+    public void movePower(String movement, double power, double duration) {
         double startTime = getRuntime();
-        switch(movement)
-        {
+        switch (movement) {
             case "forward":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power);
                     robot.FR_drive.setPower(power * -1);
                     robot.BL_drive.setPower(power);
@@ -128,8 +145,7 @@ public class MRI_Optimized extends OpMode
 
             case "backward":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power * -1);
                     robot.FR_drive.setPower(power);
                     robot.BL_drive.setPower(power * -1);
@@ -139,8 +155,7 @@ public class MRI_Optimized extends OpMode
 
             case "right":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power);
                     robot.FR_drive.setPower(power);
                     robot.BL_drive.setPower(power * -1);
@@ -150,8 +165,7 @@ public class MRI_Optimized extends OpMode
 
             case "left":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power * -1);
                     robot.FR_drive.setPower(power * -1);
                     robot.BL_drive.setPower(power);
@@ -161,8 +175,7 @@ public class MRI_Optimized extends OpMode
 
             case "leftTurn":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power);
                     robot.FR_drive.setPower(power);
                     robot.BL_drive.setPower(power);
@@ -172,8 +185,7 @@ public class MRI_Optimized extends OpMode
 
             case "rightTurn":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power * -1);
                     robot.FR_drive.setPower(power * -1);
                     robot.BL_drive.setPower(power * -1);
@@ -185,15 +197,12 @@ public class MRI_Optimized extends OpMode
     }
 
     // Moves or turns robot in specified direction, power, and duration. Does not stop itself.
-    public void smoothMovePower(String movement, double power, double duration)
-    {
+    public void smoothMovePower(String movement, double power, double duration) {
         double startTime = getRuntime();
-        switch(movement)
-        {
+        switch (movement) {
             case "forward":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power);
                     robot.FR_drive.setPower(power * -1);
                     robot.BL_drive.setPower(power);
@@ -203,8 +212,7 @@ public class MRI_Optimized extends OpMode
 
             case "backward":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power * -1);
                     robot.FR_drive.setPower(power);
                     robot.BL_drive.setPower(power * -1);
@@ -214,8 +222,7 @@ public class MRI_Optimized extends OpMode
 
             case "right":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power);
                     robot.FR_drive.setPower(power);
                     robot.BL_drive.setPower(power * -1);
@@ -225,8 +232,7 @@ public class MRI_Optimized extends OpMode
 
             case "left":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power * -1);
                     robot.FR_drive.setPower(power * -1);
                     robot.BL_drive.setPower(power);
@@ -236,8 +242,7 @@ public class MRI_Optimized extends OpMode
 
             case "leftTurn":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power);
                     robot.FR_drive.setPower(power);
                     robot.BL_drive.setPower(power);
@@ -247,8 +252,7 @@ public class MRI_Optimized extends OpMode
 
             case "rightTurn":
                 runtime.reset();
-                while (runtime.seconds() < duration)
-                {
+                while (runtime.seconds() < duration) {
                     robot.FL_drive.setPower(power * -1);
                     robot.FR_drive.setPower(power * -1);
                     robot.BL_drive.setPower(power * -1);
@@ -259,31 +263,24 @@ public class MRI_Optimized extends OpMode
     }
 
     // Turns a number of degrees compared to where the robot is. Positive numbers turn left.
-    public void changeAngle(int degreesFromCurrentAngle, double degreesPer10thSecond)
-    {
-        if (degreesFromCurrentAngle < 0)
-        {
+    public void changeAngle(int degreesFromCurrentAngle, double degreesPer10thSecond) {
+        if (degreesFromCurrentAngle < 0) {
             degreesFromCurrentAngle = Math.abs(degreesFromCurrentAngle);
             movePower("leftTurn", 0.25, degreesFromCurrentAngle / degreesPerSecond);
-        }
-        else
-        {
+        } else {
             movePower("rightTurn", 0.25, degreesFromCurrentAngle / degreesPerSecond);
         }
         motorStop();
     }
 
     // Turns a number of degrees compared to where the robot was when the program started. Positive numbers turn left.
-    public void turnAbsolute(int target)
-    {
+    public void turnAbsolute(int target) {
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         heading = cleanUp(heading);
 
         int heading = cleanUp(360 - mrGyro.getHeading()); //Set variable to gyro readings
-        for (int i = 0; i < 2; i++)
-        {
-            while (Math.abs(heading - target) > 180)
-            {  //Continue while the robot direction is further than 180 degrees from the target
+        for (int i = 0; i < 2; i++) {
+            while (Math.abs(heading - target) > 180) {  //Continue while the robot direction is further than 180 degrees from the target
                 if (heading < target)
                     smoothMovePower("leftTurn", 1, 0.5);
                 else if (heading > target)
@@ -293,8 +290,7 @@ public class MRI_Optimized extends OpMode
                 telemetry.update();
             }
 
-            while (Math.abs(heading - target) > 90)
-            {  //Continue while the robot direction is further than 90 degrees from the target
+            while (Math.abs(heading - target) > 90) {  //Continue while the robot direction is further than 90 degrees from the target
                 if (Math.abs(heading - target) > 270)
                     break;
                 if (heading > target)
@@ -306,8 +302,7 @@ public class MRI_Optimized extends OpMode
                 telemetry.update();
             }
 
-            while (Math.abs(heading - target) > 45)
-            {  //Continue while the robot direction is further than 45 degrees from the target
+            while (Math.abs(heading - target) > 45) {  //Continue while the robot direction is further than 45 degrees from the target
                 if (Math.abs(heading - target) > 315)
                     break;
                 if (heading > target)
@@ -319,8 +314,7 @@ public class MRI_Optimized extends OpMode
                 telemetry.update();
             }
 
-            while (Math.abs(heading - target) > 10)
-            {  //Continue while the robot direction is further than 10 degrees from the target
+            while (Math.abs(heading - target) > 10) {  //Continue while the robot direction is further than 10 degrees from the target
                 if (Math.abs(heading - target) > 350)
                     break;
                 if (heading > target)
@@ -345,15 +339,13 @@ public class MRI_Optimized extends OpMode
     }
 
     // Reads the ODS
-    public void odsRead()
-    {
+    public void odsRead() {
         odsReadingRaw = ods.getRawLightDetected() / 5;                   //update raw value (This function now returns a value between 0 and 5 instead of 0 and 1 as seen in the video)
         odsReadingLinear = Math.pow(odsReadingRaw, 0.5);
     }
 
     // Reads the color sensor
-    public void colorRead()
-    {
+    public void colorRead() {
         /*
         // check the status of the x button on either gamepad.
         bCurrState = gamepad1.x;
@@ -376,21 +368,19 @@ public class MRI_Optimized extends OpMode
     }
 
     // Reads the range sensor
-    public void rangeRead()
-    {
+    public void rangeRead() {
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
     }
 
     // Reads the gyro
-    public void gyroRead()
-    {
+    public void gyroRead() {
         heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
         heading = cleanUp(heading);
+        telemetry.addData("Heading ", String.format("%03d", heading));
     }
 
     // Finds heading
-    public void findHeading()
-    {
+    public void findHeading() {
         temp = heading;
         // movePower("rightTurn", 0.25, 1.0);
         heading = cleanUp(360 - mrGyro.getHeading());  // Reverse direction of heading to match the integrated value.
@@ -402,8 +392,7 @@ public class MRI_Optimized extends OpMode
         degreesPerSecond = temp2;
     }
 
-    public void knockBall (String team)
-    {
+    public void knockBall(String team) {
         double timeStart = getRuntime();
         String ballColor = "";
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
@@ -413,19 +402,14 @@ public class MRI_Optimized extends OpMode
 
         movePower("forward", 0, 0.25);
 
-        if (team == ballColor)
-        {
+        if (team == ballColor) {
             smoothMovePower("rightTurn", .25, 0.25);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
             smoothMovePower("leftTurn", .25, 0.25);
-        }
-        else if (ballColor == "none")
-        {
+        } else if (ballColor == "none") {
             motorStop();
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-        }
-        else
-        {
+        } else {
             smoothMovePower("leftTurn", .25, 0.25);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
             smoothMovePower("rightTurn", .25, 0.25);
@@ -434,8 +418,7 @@ public class MRI_Optimized extends OpMode
     }
 
     // Fixes any headings passed into it into the range of 0 - 360.
-    public int cleanUp(int input)
-    {
+    public int cleanUp(int input) {
         if (input == 360)
             return 0;
         if (input < 0)
@@ -446,19 +429,16 @@ public class MRI_Optimized extends OpMode
     }
 
     // Aligns robot with the cipher boxes by scrolling from right to left.
-    public void correctXAxisBackWall()
-    {
+    public void correctXAxisBackWall() {
         turnAbsolute(180);
         double startTime = getRuntime();
         double time = getRuntime();
         int counter = 0;
-        while (time - startTime < 2.0)
-        {
+        while (time - startTime < 2.0) {
             if (counter % 10 == 0)
                 turnAbsolute(180);
             range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
-            if (range1Cache[0] < 10 * 2.54)
-            {
+            if (range1Cache[0] < 10 * 2.54) {
                 motorStop();
                 movePower("right", 0.5, 0.01); // Find this number
                 motorStop();
@@ -475,20 +455,17 @@ public class MRI_Optimized extends OpMode
     }
 
     // Moves robot close enough to back wall to begin correctXAxis.
-    public void correctYAxisBackWall()
-    {
+    public void correctYAxisBackWall() {
 
         int counter = 0;
         turnAbsolute(180);
         movePower("backward", 1, 0.5);
         motorStop();
-        while (true)
-        {
+        while (true) {
             if (counter % 10 == 0)
                 turnAbsolute(180);
             range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
-            if (range1Cache[0] < 17 * 2.54)
-            {
+            if (range1Cache[0] < 17 * 2.54) {
                 motorStop();
                 turnAbsolute(180);
                 return;
@@ -502,212 +479,125 @@ public class MRI_Optimized extends OpMode
     }
 
     // First cycle gyro initialization
-    public void firstCycleFunc()
-    {
+    public void firstCycleFunc() {
+        runtime.reset();
+
+        while (mrGyro.isCalibrating()) // Ensure calibration is complete (usually 2 seconds)
+        {
+        }
+
         gyroRead();
         telemetry.addData("Gyroscope good", 0);
 
-        findHeading();
-        telemetry.addData("Heading good", 0);
+        //findHeading();
+        //telemetry.addData("Heading good", 0);
 
-        colorRead();
-        telemetry.addData("Color sensor good", 0);
+        //colorRead();
+        //telemetry.addData("Color sensor good", 0);
 
-        rangeRead();
-        telemetry.addData("Range sensor good", range1Cache);
+        //rangeRead();
+        //telemetry.addData("Range sensor good", range1Cache);
 
-        odsRead();
-        telemetry.addData("Optical distance sensor good", odsReadingRaw);
+        //odsRead();
+        //telemetry.addData("Optical distance sensor good", odsReadingRaw);
 
-        telemetry.clearAll();
-        telemetry.addData("First run good", 0);
+        //telemetry.clearAll();
+        //telemetry.addData("First run good", 0);
+        //firstCycle = false;
     }
 
     // Orients the robot to place blocks
-    public void orient()
-    {
+    public void orient() {
         correctYAxisBackWall();
         correctXAxisBackWall();
         //correctZAxis();
     }
 
-    // Code to run ONCE when the driver hits INIT
-    @Override
-    public void init() // Initializes the hardware variables.
-    {
-     /* Initialize the hardware variables.
-     * The init() method of the hardware class does all the work here
-     */
-        // get a reference to our ColorSensor object.
-        //colorSensor = hardwareMap.colorSensor.get("sensor_color");
+    public String colorTranspose() {
+        colorSensor.enableLed(bLedOn);
+        int redd = colorSensor.red();
+        int greenn = colorSensor.green();
+        int bluee = colorSensor.blue();
+        if ((redd + greenn + bluee) < 15)
+            return "none";
+        if (redd > greenn && redd > bluee)
+            return "red";
+        if (greenn > bluee)
+            return "green";
+        return "blue";
+    }
 
-        // Set the LED in the beginning
+    @Override
+    public void runOpMode() {
+
         robot.init(hardwareMap);
 
         sensorGyro = hardwareMap.gyroSensor.get("gyro");  // Point to the gyro in the configuration file
-        mrGyro = (ModernRoboticsI2cGyro)sensorGyro;      // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
+        mrGyro = (ModernRoboticsI2cGyro) sensorGyro;      // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
         mrGyro.calibrate();  // Calibrate the sensor so it knows where 0 is and what still is. DO NOT MOVE SENSOR WHILE BLUE LIGHT IS SOLID
 
         RANGE1 = hardwareMap.i2cDevice.get("RANGE1");
         RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
         RANGE1Reader.engage();
 
+        // bPrevState and bCurrState represent the previous and current state of the button.
+        boolean bPrevState = false;
+        boolean bCurrState = false;
+
+        // bLedOn represents the state of the LED.
+        boolean bLedOn = true;
+
         // get a reference to our ColorSensor object.
-        //ColorSensor colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
+        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
+
+        // Set the LED in the beginning
+        colorSensor.enableLed(bLedOn);
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-    }
 
-    @Override
-    public void init_loop()
-    {
-        telemetry.addData("Say", "Hello Driver");
-        telemetry.update();
-    }
+        // wait for the start button to be pressed.
+        waitForStart();
 
-    // Code to run ONCE when the driver hits PLAY
-    @Override
-    public void start()
-    {
-        runtime.reset();
+        // while the op mode is active, loop and read the RGB data.
+        // Note we use opModeIsActive() as our loop condition because it is an interruptible method.
+        while (opModeIsActive()) {
+            if (firstCycle)
+                //firstCycleFunc();
 
-        while (mrGyro.isCalibrating()) // Ensure calibration is complete (usually 2 seconds)
-        {
-        }
-        // Set the LED in the beginning
-        //colorSensor.enableLed(bLedOn);
-    }
+            // check the status of the x button on either gamepad.
+            bCurrState = gamepad1.x;
 
-    // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-    @Override
-    public void loop()
-    {
+            // check for button state transitions.
+            if (bCurrState && (bCurrState != bPrevState)) {
 
-        if (firstCycle)
-        {
-            firstCycleFunc();
-            firstCycle = false;
-        }
+                // button is transitioning to a pressed state. So Toggle LED
+                bLedOn = !bLedOn;
+            }
 
-        // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
-        frontLeft = (gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Front right
-        frontRight = (gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Front left
-        backLeft = (-gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back right
-        backRight = (-gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back left
-        Lift = gamepad2.left_stick_y * liftSpeed;
+            // update previous state variable.
+            bPrevState = bCurrState;
 
-        if (gamepad1.a)
-            target = cleanUp(target + 15);
-        if (gamepad1.b)
-            target = cleanUp(target - 15);
-        if (gamepad1.x)
-            colorRead();
-        if (gamepad1.y)
-            turnAbsolute(target);
+            // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
+            frontLeft = (gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Front right
+            frontRight = (gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Front left
+            backLeft = (-gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back right
+            backRight = (-gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back left
+            Lift = gamepad2.left_stick_y * liftSpeed;
 
-        /* drivespeed stuff
-        driveSpeed = 1;
-        if (gamepad1.right_bumper)
-            driveSpeed = 0.5;
-        if (gamepad1.left_bumper)
-            driveSpeed = 0.25;
-        */
+            robot.FL_drive.setPower(frontLeft);
+            robot.FR_drive.setPower(frontRight);
+            robot.BL_drive.setPower(backLeft);
+            robot.BR_drive.setPower(backRight);
+            robot.Lift.setPower(Lift);
 
-        if (gamepad1.right_bumper)
-            frontPosition = robot.FRONT_OUT;
-        else if (gamepad1.left_bumper)
-            frontPosition = robot.FRONT_IN;
-
-        if (gamepad1.dpad_up)
-            movePower("forward", 1, 0.5);
-        if (gamepad1.dpad_down)
-            correctXAxisBackWall();
-        if (gamepad1.dpad_left)
-            knockBall("red");
-        if (gamepad1.dpad_right)
-            orient();
-
-        if (gamepad1.back || gamepad2.back)
-            telemetryList();
-
-        if (gamepad2.a)
-            liftSpeed = 1;
-        if (gamepad2.b)
-            liftSpeed = 0.5;
-
-        if (gamepad2.x)
-        {
-            rightPosition = 0.96;
-            leftPosition = 0.44;
-        }
-
-        // Left servo going in means more
-        if (gamepad2.left_bumper)
-            leftPosition += LEFT_SPEED;
-        else if (gamepad2.y)
-            leftPosition = robot.LEFT_MIN_RANGE;
-
-        // Right servo going in means less
-        if (gamepad2.right_bumper)
-            rightPosition -= RIGHT_SPEED;
-        else if (gamepad2.y)
-            rightPosition = robot.RIGHT_MAX_RANGE;
-
-        if (gamepad2.dpad_up)
-            ballPosition += 0.01;
-        if (gamepad2.dpad_down)
-            ballPosition -= 0.01;
-        if (gamepad2.dpad_left)
-            knockBall("red");
-        if (gamepad2.dpad_right)
-            knockBall("blue");
-
-        robot.FL_drive.setPower(frontLeft);
-        robot.FR_drive.setPower(frontRight);
-        robot.BL_drive.setPower(backLeft);
-        robot.BR_drive.setPower(backRight);
-        robot.Lift.setPower(Lift);
-
-        // Move all servos to new position.
-        leftPosition = Range.clip(leftPosition, robot.LEFT_MIN_RANGE, robot.LEFT_MAX_RANGE);
-        robot.Left.setPosition(leftPosition);
-        rightPosition = Range.clip(rightPosition, robot.RIGHT_MIN_RANGE, robot.RIGHT_MAX_RANGE);
-        robot.Right.setPosition(rightPosition);
-        robot.FrontBoi.setPosition(frontPosition);
-        robot.BallArm.setPosition(ballPosition);
-        }
-
-        public void telemetryList()
-        {
-            telemetry.addData("Status", "Running: " + runtime1.toString());
-
-            // Send telemetry message to signify robot running;
-            telemetry.addData("Left", "%.2f", leftPosition);
-            telemetry.addData("Right", "%.2f", rightPosition);
-            telemetry.addData("Front", "%.2f", frontPosition);
-            telemetry.addData("Ball", "%.2f", ballPosition);
-
-            telemetry.addData("frontLeft", "%.2f", frontLeft);
-            telemetry.addData("frontRight", "%.2f", frontRight);
-            telemetry.addData("backLeft", "%.2f", backLeft);
-            telemetry.addData("backRight", "%.2f", backRight);
-
-            telemetry.addData("Lift", "%.2f", Lift);
-            telemetry.addData("DegreesPer10thSecond", "%.2f", degreesPer10thSecond);
-
-            telemetry.addData("5. heading", String.format("%03d", heading));  // Display variables to Driver Station Screen
-            telemetry.addData("6. target", String.format("%03d", target));
-
-            telemetry.addData("7. ODS Raw", odsReadingRaw);
-
-            telemetry.addData("8. Ultra Sonic", range1Cache[0] & 0xFF);
-            telemetry.addData("9. range ODS", range1Cache[1] & 0xFF);
-
-            telemetry.addData("10. ODS Raw", odsReadingRaw);
-            telemetry.addData("11. ODS linear", odsReadingLinear);
-
-            telemetry.update(); // Limited to 100x per second
+            // send the info back to driver station using telemetry function.
+            telemetry.addData("LED", bLedOn ? "On" : "Off");
+            telemetry.addData("Red", colorSensor.red());
+            telemetry.addData("Green", colorSensor.green());
+            telemetry.addData("Blue", colorSensor.blue());
+            telemetry.addData("High", colorTranspose());
+            telemetry.update();
         }
     }
-
+}
