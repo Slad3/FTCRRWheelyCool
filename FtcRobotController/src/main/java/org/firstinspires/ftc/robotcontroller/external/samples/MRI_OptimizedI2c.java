@@ -544,6 +544,8 @@ public class MRI_OptimizedI2c extends OpMode
         //Passive - For measuring ambient light, eg. the FTC Color Beacon
     }
 
+
+
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
     @Override
     public void loop()
@@ -560,7 +562,6 @@ public class MRI_OptimizedI2c extends OpMode
 
         range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);;
 
-        firstCycle = false;
         if (firstCycle) // This section finds the turning speed of the robot.
         {
             ballPosition = robot.BALL_ARM_UP;
@@ -575,6 +576,14 @@ public class MRI_OptimizedI2c extends OpMode
             degreesPer10thSecond = temp2 / 10.0; // Saves variable for rest of program.
             degreesPerSecond = temp2;
             firstCycle = false;
+
+            odsReadingRaw = ods1.getRawLightDetected();
+
+            heading = 360 - mrGyro.getHeading();  // Reverse direction of heading to match the integrated value
+            heading = cleanUp(heading);
+
+            range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+            firstCycle = false;
         }
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
@@ -587,7 +596,7 @@ public class MRI_OptimizedI2c extends OpMode
         // The below two if() statements ensure that the mode of the color sensor is changed only once each time the touch sensor is pressed.
         // The mode of the color sensor is saved to the sensor's long term memory. Just like flash drives, the long term memory has a life time in the 10s or 100s of thousands of cycles.
         // This seems like a lot but if your program wrote to the long term memory every time though the main loop, it would shorten the life of your sensor.
-        if (!buttonState && gamepad1.x)  // If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
+        if (!buttonState)  // If the touch sensor is just now being pressed (was not pressed last time through the loop but now is)
         {
             buttonState = true;                   // Change touch state to true because the touch sensor is now pressed
             LEDState = !LEDState;                 // Change the LEDState to the opposite of what it was
@@ -604,7 +613,12 @@ public class MRI_OptimizedI2c extends OpMode
         }
 
         if (!gamepad1.x)                        // If the touch sensor is now pressed
-            buttonState = false;                // Set the buttonState to false to indicate that the touch sensor was released
+            buttonState = !buttonState;
+
+        if (gamepad1.back)
+            firstCycle = true;
+
+
 
         colorAcache = colorAreader.read(0x04, 1);
         colorCcache = colorCreader.read(0x04, 1);
