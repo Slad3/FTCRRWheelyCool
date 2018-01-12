@@ -346,7 +346,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
             public void knockBall(String team) {
                 double timeStart = getRuntime();
-                String ballColor = "";
+                String ballColor = colorTranspose();
                 robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
                 // Code to sense color
                 movePower("forward", 0, 0.25);
@@ -378,13 +378,13 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
             // Aligns robot with the cipher boxes by scrolling from right to left.
             public void correctXAxisBackWall() {
-                turnAbsolute(180);
+                //turnAbsolute(180);
                 double startTime = getRuntime();
                 double time = getRuntime();
                 int counter = 0;
                 while (time - startTime < 2.0) {
                     if (counter % 10 == 0)
-                        turnAbsolute(180);
+                        //turnAbsolute(180);
                     range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
                     if (range1Cache[0] < 10 * 2.54) {
                         motorStop();
@@ -404,26 +404,40 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
             // Moves robot close enough to back wall to begin correctXAxis.
             public void correctYAxisBackWall() {
-                int counter = 0;
-                turnAbsolute(180);
-                movePower("backward", 1, 0.5);
                 motorStop();
-                while (true) {
-                    if (counter % 10 == 0)
-                        turnAbsolute(180);
+                //turnAbsolute(180);
+                range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+                motorStop();
+                boolean condition = true;
+                turnAbsolute(180);
+                while (condition) {
                     range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
                     if (range1Cache[0] < 17 * 2.54) {
                         motorStop();
-                        turnAbsolute(180);
-                        return;
+                        condition = false;
                     }
-                    smoothMovePower("forward", 0.5, 0.05);
-                    telemetry.addData("Heading", String.format("%03d", heading));
-                    telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
-                    telemetry.addData("Counter", counter);
-                    counter++;
+                    smoothMovePower("forward", .25, .1);
+
                 }
+                //turnAbsolute(180);
             }
+
+            //Releases Block and turns around
+            public void release() {
+
+                //let go of both servos
+                leftPosition = 12; //slightly offset of straight out
+                rightPosition = 107;//slightly offset of straight out
+                //raise lift above the block to prevent tipping
+                smoothMovePower("lift", .5, 3.0);
+
+                smoothMovePower("backwards", .5, 2.0);
+
+                turnAbsolute(1);
+
+
+            }
+
 
             // First cycle gyro initialization
             public void firstCycleFunc() {
@@ -433,17 +447,17 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                 }
                 gyroRead();
                 telemetry.addData("Gyroscope good", 0);
-                //findHeading();
-                //telemetry.addData("Heading good", 0);
-                //colorRead();
-                //telemetry.addData("Color sensor good", 0);
-                //rangeRead();
-                //telemetry.addData("Range sensor good", range1Cache);
-                //odsRead();
-                //telemetry.addData("Optical distance sensor good", odsReadingRaw);
-                //telemetry.clearAll();
-                //telemetry.addData("First run good", 0);
-                //firstCycle = false;
+                findHeading();
+                telemetry.addData("Heading good", 0);
+                colorTranspose();
+                telemetry.addData("Color sensor good", 0);
+                rangeRead();
+                telemetry.addData("Range sensor good", range1Cache);
+                odsRead();
+                telemetry.addData("Optical distance sensor good", odsReadingRaw);
+                telemetry.clearAll();
+                telemetry.addData("First run good", 0);
+                firstCycle = false;
             }
 
             // Orients the robot to place blocks
@@ -458,7 +472,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                 int redd = colorSensor.red();
                 int greenn = colorSensor.green();
                 int bluee = colorSensor.blue();
-                if ((redd + greenn + bluee) < 15)
+                if ((redd + greenn + bluee) < 5)
                     return "none";
                 if (redd > greenn && redd > bluee)
                     return "red";
@@ -509,17 +523,58 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                     }
                     // update previous state variable.
                     bPrevState = bCurrState;
+
+                    if(gamepad1.x){
+                        correctXAxisBackWall();
+                    }
+                    if(gamepad1.y){
+                        correctYAxisBackWall();
+                    }
+                    if(gamepad1.b){
+                        release();
+                    }
+
+
+
+                    if (gamepad2.x)
+                    {
+                        rightPosition = 0.96;
+                        //rightPosition = robot.RIGHT_MIN_RANGE;
+                        leftPosition = 0.44;
+                        //leftPosition = robot.LEFT_MIN_RANGE;
+                    }
+
+
+                    if (gamepad2.left_bumper)
+                        leftPosition += LEFT_SPEED;
+                    else if (gamepad2.y)
+                        leftPosition = robot.LEFT_MIN_RANGE;
+
+                    // Right servo going in means less
+                    if (gamepad2.right_bumper)
+                        rightPosition -= RIGHT_SPEED;
+                    else if (gamepad2.y)
+                        rightPosition = robot.RIGHT_MIN_RANGE;
+
                     // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
                     frontLeft = (gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Front right
                     frontRight = (gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Front left
                     backLeft = (-gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back right
                     backRight = (-gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back left
-                    Lift = gamepad2.left_stick_y * liftSpeed;
+                    Lift = gamepad2.left_stick_y * liftSpeed * -1;
                     robot.FL_drive.setPower(frontLeft);
                     robot.FR_drive.setPower(frontRight);
                     robot.BL_drive.setPower(backLeft);
                     robot.BR_drive.setPower(backRight);
                     robot.Lift.setPower(Lift);
+
+                    // Move all servos to new position.
+                    leftPosition = Range.clip(leftPosition, robot.LEFT_MIN_RANGE, robot.LEFT_MAX_RANGE);
+                    robot.Left.setPosition(leftPosition);
+                    rightPosition = Range.clip(rightPosition, robot.RIGHT_MIN_RANGE, robot.RIGHT_MAX_RANGE);
+                    robot.Right.setPosition(rightPosition);
+                    robot.FrontBoi.setPosition(frontPosition);
+                    robot.BallArm.setPosition(ballPosition);
                     // send the info back to driver station using telemetry function.
                     telemetry.addData("LED", bLedOn ? "On" : "Off");
                     telemetry.addData("Red", colorSensor.red());
