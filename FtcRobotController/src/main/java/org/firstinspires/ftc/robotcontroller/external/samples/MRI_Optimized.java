@@ -75,7 +75,7 @@ public class MRI_Optimized extends OpMode
     double odsReadingRaw;
     static double odsReadingLinear;
 
-    ColorSensor colorSensor;    // Hardware Device Object
+    //ColorSensor colorSensor;    // Hardware Device Object
     boolean bPrevState = false;
     boolean bCurrState = false;
     boolean bLedOn = true; // bLedOn represents the state of the LED.
@@ -354,6 +354,7 @@ public class MRI_Optimized extends OpMode
     // Reads the color sensor
     public void colorRead()
     {
+        /*
         // check the status of the x button on either gamepad.
         bCurrState = gamepad1.x;
         // check for button state transitions.
@@ -362,15 +363,16 @@ public class MRI_Optimized extends OpMode
             // button is transitioning to a pressed state. So Toggle LED
             bLedOn = !bLedOn;
         }
-        bPrevState = bCurrState;
+        //bPrevState = bCurrState;
+        */
 
-        colorSensor.enableLed(bLedOn);
+        //colorSensor.enableLed(bLedOn);
 
-        telemetry.addData("LED", bLedOn ? "On" : "Off");
-        telemetry.addData("Red  ", colorSensor.red());
-        telemetry.addData("Green", colorSensor.green());
-        telemetry.addData("Blue ", colorSensor.blue());
-        telemetry.update();
+        //telemetry.addData("LED", bLedOn ? "On" : "Off");
+        //telemetry.addData("Red  ", colorSensor.red());
+        //telemetry.addData("Green", colorSensor.green());
+        //telemetry.addData("Blue ", colorSensor.blue());
+        //telemetry.update();
     }
 
     // Reads the range sensor
@@ -551,7 +553,7 @@ public class MRI_Optimized extends OpMode
         RANGE1Reader.engage();
 
         // get a reference to our ColorSensor object.
-        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
+        ColorSensor colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -574,7 +576,7 @@ public class MRI_Optimized extends OpMode
         {
         }
         // Set the LED in the beginning
-        colorSensor.enableLed(bLedOn);
+        //colorSensor.enableLed(bLedOn);
     }
 
     // Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
