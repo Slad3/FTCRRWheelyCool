@@ -480,7 +480,7 @@ public class MRI_OldWorking extends OpMode
         telemetry.addData("Status", "Initialized");
 
         //the below lines set up the configuration file
-        colorSensor = hardwareMap.i2cDevice.get("color_sensor");
+        colorSensor = hardwareMap.i2cDevice.get("sensor_color");
         //colorC = hardwareMap.i2cDevice.get("colorC");
 
         colorSensorreader = new I2cDeviceSynchImpl(colorSensor, I2cAddr.create8bit(0x3a), false);
