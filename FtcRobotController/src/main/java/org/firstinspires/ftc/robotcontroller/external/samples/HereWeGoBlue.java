@@ -31,8 +31,8 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
             double frontPosition = robot.FRONT_IN;
             double liftSpeed = 1;
             double driveSpeed = 1;
-            final double LEFT_SPEED = 0.03;                            // Sets rate to move servo
-            final double RIGHT_SPEED = 0.03;
+            final double LEFT_SPEED = 0.06;                            // Sets rate to move servo
+            final double RIGHT_SPEED = 0.06;
 
             // Sets rates
             double frontLeft;
@@ -318,11 +318,11 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                 robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
                 // Code to sense color
                 movePower("forward", 0, 0.25);
-                if (team == ballColor) {
+                if (team.equals(ballColor)) {
                     smoothMovePower("rightTurn", .25, 0.25);
                     robot.BallArm.setPosition(robot.BALL_ARM_UP);
                     smoothMovePower("leftTurn", .25, 0.25);
-                } else if (ballColor == "none") {
+                } else if (ballColor.equals("none")) {
                     motorStop();
                     robot.BallArm.setPosition(robot.BALL_ARM_UP);
                 } else {
@@ -517,8 +517,6 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                         release();
                     }
 
-
-
                     if (gamepad2.x)
                     {
                         rightPosition = 0.96;
@@ -526,7 +524,6 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                         leftPosition = 0.44;
                         //leftPosition = robot.LEFT_MIN_RANGE;
                     }
-
 
                     if (gamepad2.left_bumper)
                         leftPosition += LEFT_SPEED;
@@ -537,7 +534,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                     if (gamepad2.right_bumper)
                         rightPosition -= RIGHT_SPEED;
                     else if (gamepad2.y)
-                        rightPosition = robot.RIGHT_MIN_RANGE;
+                        rightPosition = robot.RIGHT_MAX_RANGE;
 
                     // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
                     frontLeft = (gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Front right

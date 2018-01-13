@@ -55,9 +55,9 @@ public class HardwareK9bot
     public final static double LEFT_MIN_RANGE  = 0.41;
     public final static double LEFT_MAX_RANGE  = 0.98; // Use as home.
     public final static double RIGHT_MIN_RANGE  = 0.05; // Use as home.
-    public final static double LEFT_HOME  = 0.98;
-    public final static double RIGHT_HOME  = 0.05;
     public final static double RIGHT_MAX_RANGE  = 0.70;
+    public final static double LEFT_HOME  = 0.41;
+    public final static double RIGHT_HOME  = 0.70;
     public final static double BALL_ARM_UP = .00;
     public final static double BALL_ARM_DOWN = 1;
     public final static double FRONT_OUT = .98;
@@ -109,8 +109,8 @@ public class HardwareK9bot
         //the below lines set up the configuration file
         ods = hwMap.opticalDistanceSensor.get("ods");
 
-        Left.setPosition(LEFT_MAX_RANGE);
-        Right.setPosition(RIGHT_MIN_RANGE);
+        Left.setPosition(LEFT_HOME);
+        Right.setPosition(RIGHT_HOME);
         BallArm.setPosition(BALL_ARM_UP);
         FrontBoi.setPosition(FRONT_IN);
     }

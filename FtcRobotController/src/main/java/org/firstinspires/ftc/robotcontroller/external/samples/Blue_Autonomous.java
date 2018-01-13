@@ -35,6 +35,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -58,9 +62,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Pushbot: Auto Drive By Time", group="K9bot")
+@Autonomous(name="Blue Autonomous", group="K9bot")
 //@Disabled
-public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
+public class Blue_Autonomous extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareK9bot         robot   = new HardwareK9bot();   // Use a Pushbot's hardware
@@ -76,6 +80,15 @@ public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
     ModernRoboticsI2cGyro mrGyro;  // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
 
     ColorSensor colorSensor;    // Hardware Device Object
+
+    byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
+    I2cDevice RANGE1;
+    I2cDeviceSynch RANGE1Reader;
+
+    I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); // Default I2C address for MR Range (7-bit)
+
+    public static final int RANGE1_REG_START = 0x04; // Register to start reading
+    public static final int RANGE1_READ_LENGTH = 2; // Number of byte to read
 
     // Moves or turns robot in specified direction, power, and duration. Then stops.
     public void movePower(String movement, double power, double duration) {
@@ -212,6 +225,13 @@ public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
         robot.FR_drive.setPower(0);
         robot.BL_drive.setPower(0);
         robot.BR_drive.setPower(0);
+        robot.Lift.setPower(0);
+    }
+
+    // Sets power of all drive motors to zero.
+    public void motorWait(double duration) {
+
+        movePower("forward", 0, duration);
     }
 
     // Fixes any headings passed into it into the range of 0 - 360.
@@ -307,23 +327,52 @@ public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
         telemetry.addData("Heading ", String.format("%03d", heading));
     }
 
+    // Reads the range sensor
+    public void rangeRead() {
+        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+    }
+
     public void knockBall(String team) {
-        String ballColor = colorTranspose();
         robot.BallArm.setPosition(robot.BALL_ARM_DOWN);
-        movePower("forward", 0, 0.25);
-        if (team == ballColor) {
-            smoothMovePower("rightTurn", .25, 0.25);
+        sleep(1000);
+        runtime.reset();
+        while (opModeIsActive() && (runtime.seconds() < 1)) {
+            telemetry.addData("Waiting 1 Second", "%2.5f S Elapsed", runtime.seconds());
+            telemetry.update();
+        }
+        String ballColor = colorTranspose();
+        telemetry.addData("Got color transpose:", ballColor);
+        telemetry.update();
+        double duration = 0.5;
+        double power = 0.25;
+        if (team.equals(ballColor)) {
+            smoothMovePower("rightTurn", power, duration);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("leftTurn", .25, 0.25);
-        } else if (ballColor == "none") {
+            smoothMovePower("leftTurn", power, duration);
+        } else if (ballColor.equals("none")) {
             motorStop();
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
         } else {
-            smoothMovePower("leftTurn", .25, 0.25);
+            smoothMovePower("leftTurn", power, duration);
             robot.BallArm.setPosition(robot.BALL_ARM_UP);
-            smoothMovePower("rightTurn", .25, 0.25);
+            smoothMovePower("rightTurn", power, duration);
         }
         motorStop();
+    }
+
+    // Moves robot close enough to back wall to begin correctXAxis.
+    public void correctYAxisBackWall() {
+        motorStop();
+        turnAbsolute(90);
+        while (true) {
+            rangeRead();
+            if (range1Cache[0] < (17 * 2.54)) {
+                motorStop();
+                break;
+            }
+            smoothMovePower("forward", .25, .1);
+        }
+        return;
     }
 
     @Override
@@ -338,6 +387,12 @@ public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
         mrGyro = (ModernRoboticsI2cGyro) sensorGyro;      // ModernRoboticsI2cGyro allows us to .getIntegratedZValue()
         mrGyro.calibrate();  // Calibrate the sensor so it knows where 0 is and what still is. DO NOT MOVE SENSOR WHILE BLUE LIGHT IS SOLID
 
+        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
+
+        RANGE1 = hardwareMap.i2cDevice.get("RANGE1");
+        RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
+        RANGE1Reader.engage();
+
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Ready to run");    //
         telemetry.update();
@@ -348,10 +403,10 @@ public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
         // Step through each leg of the path, ensuring that the Auto mode has not been stopped along the way
 
         // Step 1:  Wait a second
-        movePower("backward", 0, 1);
+        motorWait(1);
         runtime.reset();
         while (opModeIsActive() && (runtime.seconds() < 1)) {
-            telemetry.addData("Waiting 1 Second", "Leg 1: %2.5f S Elapsed", runtime.seconds());
+            telemetry.addData("Waiting 1 Second", "%2.5f S Elapsed", runtime.seconds());
             telemetry.update();
         }
 
@@ -360,23 +415,42 @@ public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
         robot.Right.setPosition(robot.RIGHT_GRAB);
 
         // Step 3:  Raise lift a bit
-        movePower("Lift", 0.5, 0.5);
+        movePower("Lift", 0.25, 0.25);
+        motorStop();
         runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 0.5)) {
-            telemetry.addData("Lifting", "Leg 3: %2.5f S Elapsed", runtime.seconds());
+        while (opModeIsActive() && (runtime.seconds() < 0.25)) {
+            telemetry.addData("Lifting", "%2.5f S Elapsed", runtime.seconds());
             telemetry.update();
         }
 
         // Step 4:  Knock the ball
         knockBall("red");
 
-        // Step 5:  Align robot
-        turnAbsolute(0);
+        sleep(500);
 
-        // Step 4:  Stop and close the claw.
+        // Step 5: Drive forward
+        movePower("forward", 0.5, 1.5);
+        sleep(500);
+
+        // Step 6: Turn to wall
+        turnAbsolute(90);
+
+        // Step 7: Correct Y
+        correctYAxisBackWall();
+
+        // Step 8: Place block
+        movePower("forward", 0.25, 0.75);
+        movePower("forward", 0.1, 0.75);
+        movePower("forward", 0.05, 3);
+
+        // Step 9:  Stop all motors.
         motorStop();
-        robot.Left.setPosition(robot.LEFT_RELEASE);
-        robot.Right.setPosition(robot.RIGHT_RELEASE);
+        robot.Left.setPosition(robot.LEFT_HOME);
+        robot.Right.setPosition(robot.RIGHT_HOME);
+        sleep(1000);
+
+        // Step 10: Back up
+        movePower("backward", 1, 0.5);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
