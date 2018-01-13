@@ -382,11 +382,34 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                 double startTime = getRuntime();
                 double time = getRuntime();
                 int counter = 0;
-                while (time - startTime < 2.0) {
+
+                boolean condition = true;
+                smoothMovePower("left", .5, 2);
+
+
+                while(condition){
+
+                    if(range1Cache[0] > 13 * 2.54){
+                        motorStop();
+                        smoothMovePower("left", .5, .75);
+                        condition = false;
+                    }
+
+                    smoothMovePower("left", .5, 5);
+
+                }
+
+
+                return;
+
+
+
+
+                /*while (time - startTime < 2.0) {
                     if (counter % 10 == 0)
                         //turnAbsolute(180);
-                    range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
-                    if (range1Cache[0] < 10 * 2.54) {
+                    //range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+                    if (!(range1Cache[0] < 10 * 2.54)) {
                         motorStop();
                         movePower("right", 0.5, 0.01); // Find this number
                         motorStop();
@@ -398,18 +421,16 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                     telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
                     telemetry.addData("Counter", counter);
                     counter++;
-                }
-                motorStop();
+                }*/
             }
 
             // Moves robot close enough to back wall to begin correctXAxis.
             public void correctYAxisBackWall() {
                 motorStop();
-                //turnAbsolute(180);
+                turnAbsolute(180);
                 range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
                 motorStop();
                 boolean condition = true;
-                turnAbsolute(180);
                 while (condition) {
                     range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
                     if (range1Cache[0] < 17 * 2.54) {
@@ -434,7 +455,6 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                 smoothMovePower("backwards", .5, 2.0);
 
                 turnAbsolute(1);
-
 
             }
 
@@ -512,8 +532,6 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                 // while the op mode is active, loop and read the RGB data.
                 // Note we use opModeIsActive() as our loop condition because it is an interruptible method.
                 while (opModeIsActive()) {
-                    if (firstCycle)
-                        //firstCycleFunc();
                         // check the status of the x button on either gamepad.
                         bCurrState = gamepad1.x;
                     // check for button state transitions.
