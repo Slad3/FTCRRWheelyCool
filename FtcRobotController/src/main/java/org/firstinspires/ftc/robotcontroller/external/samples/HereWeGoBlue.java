@@ -1,14 +1,10 @@
 
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
-        import android.app.Activity;
-        import android.graphics.Color;
-        import android.view.View;
         import com.qualcomm.robotcore.eventloop.opmode.Disabled;
         import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
         import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
         import com.qualcomm.robotcore.hardware.ColorSensor;
-        import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
         import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
         import com.qualcomm.robotcore.eventloop.opmode.OpMode;
         import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -21,20 +17,12 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
         import com.qualcomm.robotcore.util.Range;
         import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
         import android.app.Activity;
-        import android.graphics.Color;
         import android.view.View;
         import com.qualcomm.ftcrobotcontroller.R;
-        import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-        import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-        import com.qualcomm.robotcore.hardware.ColorSensor;
 
-
-
-
-        @TeleOp(name = "HereWeGo", group = "Sensor")
+        @TeleOp(name = "HereWeGoBlue", group = "Sensor")
         //@Disabled
-        public class HereWeGo extends LinearOpMode {
+        public class HereWeGoBlue extends LinearOpMode {
             /* Declare OpMode members. */
             HardwareK9bot robot = new HardwareK9bot();
             double leftPosition = robot.LEFT_MAX_RANGE;                  // Servo safe position
@@ -299,26 +287,6 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                 odsReadingLinear = Math.pow(odsReadingRaw, 0.5);
             }
 
-            // Reads the color sensor
-            public void colorRead() {
-               /*
-               // check the status of the x button on either gamepad.
-               bCurrState = gamepad1.x;
-               // check for button state transitions.
-               if (bCurrState && (bCurrState != bPrevState))  {
-                   // button is transitioning to a pressed state. So Toggle LED
-                   bLedOn = !bLedOn;
-               }
-               //bPrevState = bCurrState;
-               */
-                //colorSensor.enableLed(bLedOn);
-                //telemetry.addData("LED", bLedOn ? "On" : "Off");
-                //telemetry.addData("Red  ", colorSensor.red());
-                //telemetry.addData("Green", colorSensor.green());
-                //telemetry.addData("Blue ", colorSensor.blue());
-                //telemetry.update();
-            }
-
             // Reads the range sensor
             public void rangeRead() {
                 range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
@@ -387,7 +355,8 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                 smoothMovePower("left", .5, 2);
 
 
-                while(condition){
+                while(condition)
+                {
 
                     if(range1Cache[0] > 13 * 2.54){
                         motorStop();
@@ -399,11 +368,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
                 }
 
-
                 return;
-
-
-
 
                 /*while (time - startTime < 2.0) {
                     if (counter % 10 == 0)
