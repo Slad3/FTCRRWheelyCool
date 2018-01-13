@@ -423,28 +423,6 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
             }
 
-
-            // First cycle gyro initialization
-            public void firstCycleFunc() {
-                runtime.reset();
-                while (mrGyro.isCalibrating()) // Ensure calibration is complete (usually 2 seconds)
-                {
-                }
-                gyroRead();
-                telemetry.addData("Gyroscope good", 0);
-                findHeading();
-                telemetry.addData("Heading good", 0);
-                colorTranspose();
-                telemetry.addData("Color sensor good", 0);
-                rangeRead();
-                telemetry.addData("Range sensor good", range1Cache);
-                odsRead();
-                telemetry.addData("Optical distance sensor good", odsReadingRaw);
-                telemetry.clearAll();
-                telemetry.addData("First run good", 0);
-                firstCycle = false;
-            }
-
             // Orients the robot to place blocks
             public void orient() {
                 correctYAxisBackWall();
@@ -507,22 +485,15 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                     // update previous state variable.
                     bPrevState = bCurrState;
 
-                    if(gamepad1.x){
-                        correctXAxisBackWall();
-                    }
-                    if(gamepad1.y){
+                    if(gamepad1.y)
+                    {
                         correctYAxisBackWall();
-                    }
-                    if(gamepad1.b){
-                        release();
                     }
 
                     if (gamepad2.x)
                     {
-                        rightPosition = 0.96;
-                        //rightPosition = robot.RIGHT_MIN_RANGE;
-                        leftPosition = 0.44;
-                        //leftPosition = robot.LEFT_MIN_RANGE;
+                        rightPosition = robot.RIGHT_GRAB;
+                        leftPosition = robot.LEFT_GRAB;
                     }
 
                     if (gamepad2.left_bumper)
@@ -542,6 +513,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                     backLeft = (-gamepad1.left_stick_x - gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back right
                     backRight = (-gamepad1.left_stick_x + gamepad1.left_stick_y - gamepad1.right_stick_x) / 2 * driveSpeed; // Back left
                     Lift = gamepad2.left_stick_y * liftSpeed * -1;
+
                     robot.FL_drive.setPower(frontLeft);
                     robot.FR_drive.setPower(frontRight);
                     robot.BL_drive.setPower(backLeft);
@@ -555,11 +527,9 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
                     robot.Right.setPosition(rightPosition);
                     robot.FrontBoi.setPosition(frontPosition);
                     robot.BallArm.setPosition(ballPosition);
+
                     // send the info back to driver station using telemetry function.
-                    telemetry.addData("LED", bLedOn ? "On" : "Off");
-                    telemetry.addData("Red", colorSensor.red());
-                    telemetry.addData("Green", colorSensor.green());
-                    telemetry.addData("Blue", colorSensor.blue());
+                    telemetry.addData("Runtime: ", runtime);
                     telemetry.addData("High", colorTranspose());
                     telemetry.update();
                 }
